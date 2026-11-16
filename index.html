@@ -215,6 +215,17 @@ textarea{resize:vertical;line-height:1.45}
 .lt{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr) auto;gap:8px;align-items:center}
 .aicard{padding:11px 13px;border-radius:9px;background:var(--surface-2);display:flex;flex-direction:column;gap:6px;font-size:13px}
 .aicard .k{color:var(--muted);font-size:12px}
+.aimap{display:flex;flex-direction:column;gap:6px}
+.sub-h{display:flex;flex-direction:column;gap:2px;margin-bottom:4px}
+.sub-h b{font-size:13.5px}
+.push-sec{border-top:1px solid var(--line);padding-top:14px;margin-top:6px;display:flex;flex-direction:column;gap:10px}
+.lt-days label.stale{border-style:dashed;color:var(--warn)}
+.aimap-h,.aimap-r{display:grid;grid-template-columns:minmax(0,1fr) 18px minmax(0,1.3fr) 34px;gap:6px;align-items:center}
+.aimap-h{font-size:12px;color:var(--muted);font-weight:600}
+.aimap-r .to{color:var(--muted);text-align:center}
+.aimap-r input,.aimap-r select{min-width:0}
+.aimap-r.dup select{border-color:var(--warn)}
+@media (max-width:560px){.aimap-h{display:none}.aimap-r{grid-template-columns:minmax(0,1fr) 34px}.aimap-r .to{display:none}.aimap-r select{grid-column:1}}
 .kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 14px;font-size:13px}
 .kv dt{color:var(--muted)}
 .kv dd{margin:0;min-width:0;overflow-wrap:anywhere}
@@ -815,7 +826,7 @@ const TYPES = {
 };
 const CAPS = [
   {k:'ten',    t:'Đặt tên và nội dung phiếu', d:'Tự sinh tên phiếu và phần mô tả từ dữ liệu trên phiếu.', tag:'Tên'},
-  {k:'truong', t:'Lưu dữ liệu phiếu',         d:'Chép các trường từ Base vào bảng dữ liệu, đẩy ngược khi có thay đổi.', tag:'Dữ liệu'},
+  {k:'truong', t:'Lưu dữ liệu phiếu',         d:'Chép trường từ Base vào bảng dữ liệu; chọn riêng trường nào ghi ngược lên Base.', tag:'Dữ liệu'},
   {k:'file',   t:'Lưu và chuyển file',         d:'Cất file vào thư mục Drive, chuyển file sang trường khác.', tag:'File'},
   {k:'ai',     t:'Đọc tài liệu bằng AI',       d:'Đọc file đính kèm và tự điền các trường.', tag:'AI'},
   {k:'office', t:'Đăng lên Base Office',       d:'Cấp số và lưu văn bản vào sổ của đơn vị.', tag:'Office'},
@@ -886,8 +897,8 @@ const DICT = {
   ai: [
     {k:'Kho – đọc chứng từ đề xuất', v:'Bạn là thủ kho của công ty cao su. Đọc chứng từ đề xuất nhập/xuất kho đính kèm (ảnh chụp hoặc PDF) và dữ liệu phiếu, rồi điền các thông tin được yêu cầu. Chỉ lấy thông tin có trên chứng từ, không suy đoán.', inp:'service_hinh_thuc, service_ly_do_xuat_nhap', out:[['service_nha_cung_cap','Tên nhà cung cấp hoặc đơn vị giao hàng'],['service_don_vi_su_dung','Đơn vị/bộ phận sử dụng'],['service_loai_hang_hoa','Một trong: Vật tư, Mủ nguyên liệu, Mủ thành phẩm']], model:'gemini-3.1-flash-lite', ow:false, used:3},
     {k:'Kho – đọc phiếu xuất nhập kho', v:'Đọc phiếu nhập/xuất kho đã ký đính kèm và lấy số phiếu, ngày nhập/xuất ghi trên phiếu.', inp:'', out:[['service_so_phieu','Số phiếu in trên phiếu'],['service_ngay_xuat_nhap','Ngày nhập/xuất, dạng dd/MM/yyyy']], model:'gemini-3.1-flash-lite', ow:false, used:4},
-    {k:'Văn thư đến – bóc tách', v:'Đọc văn bản đến đính kèm và trích xuất thông tin văn bản.', inp:'', out:[['service_loai_van_thu','Loại văn bản'],['service_so_ky_hieu_van_ban','Số hiệu'],['service_ngay_van_ban','Ngày dd/mm/yyyy'],['service_trich_yeu_noi_dung','Trích yếu nội dung'],['service_don_vi_ban_hanh','Cơ quan ban hành']], model:'gemini-3.1-flash-lite', ow:false, used:4},
-    {k:'Văn thư đi – bóc tách', v:'Hãy đóng vai văn thư chuyên nghiệp. Đọc file dự thảo này.', inp:'', out:[['service_loai_van_thu','Loại văn bản'],['service_trich_yeu_noi_dung','Nội dung trích yếu']], model:'gemini-3.1-flash-lite', ow:false, used:4}
+    {k:'Văn thư đến – bóc tách', v:'Đọc văn bản đến đính kèm và trích xuất thông tin văn bản.', inp:'', out:[['service_loai_van_thu','Loại văn bản','loai'],['service_so_ky_hieu_van_ban','Số hiệu','so'],['service_ngay_van_ban','Ngày dd/mm/yyyy','ngay'],['service_trich_yeu_noi_dung','Trích yếu nội dung','trich'],['service_don_vi_ban_hanh','Cơ quan ban hành','coquan']], model:'gemini-3.1-flash-lite', ow:false, used:4},
+    {k:'Văn thư đi – bóc tách', v:'Hãy đóng vai văn thư chuyên nghiệp. Đọc file dự thảo này.', inp:'', out:[['service_loai_van_thu','Loại văn bản','loai'],['service_trich_yeu_noi_dung','Nội dung trích yếu','trich']], model:'gemini-3.1-flash-lite', ow:false, used:4}
   ],
   file: [
     {k:'File đầu vào 1 (VT đến)', v:'service_vt_den_file_dau_vao_1', used:4},
@@ -915,7 +926,7 @@ function mk(o){
   const s = Object.assign({name:'', block:0, nameRef:'', nameTpl:'', contentRef:'', contentTpl:'', fields:[], drive:'', src:'', dst:'', ai:'', office:'', capso:false, lt:[], exec:null, start:false, copied:false, ep:'old', baseFrom:'', baseVia:'', baseFields:null}, o);
   if (s.nameRef){ const it = DICT.ten.find(i => i.k === s.nameRef); if (it) s.nameTpl = it.v; }
   if (s.contentRef){ const it = DICT.noidung.find(i => i.k === s.contentRef); if (it) s.contentTpl = it.v; }
-  s.fields = s.fields.slice(); s.lt = s.lt.map(x => Object.assign({}, x)); s.exec = s.exec ? Object.assign({}, s.exec) : null; if (s.baseFields) s.baseFields = s.baseFields.slice();
+  s.fields = s.fields.slice(); if (s.aiMap) s.aiMap = s.aiMap.map(x => Object.assign({}, x)); if (s.pushFields) s.pushFields = s.pushFields.slice(); s.lt = s.lt.map(x => Object.assign({}, x)); s.exec = s.exec ? Object.assign({}, s.exec) : null; if (s.baseFields) s.baseFields = s.baseFields.slice();
   if (!s.caps) s.caps = {ten:!!(s.nameTpl || s.contentTpl), truong:s.fields.length > 0, file:!!(s.drive || s.src || s.dst), ai:!!s.ai, office:!!(s.office || s.capso), lt:s.lt.length > 0, exec:!!(s.exec && s.exec.on)};
   else s.caps = Object.assign({}, s.caps);
   return s;
@@ -1207,6 +1218,10 @@ function viewProcs(){
 }
 
 /* ================= màn chi tiết quy trình ================= */
+/** Ô chọn lấy từ Từ điển + dòng cuối "Thêm mới" (mở hộp nhập nhanh, lưu xong chọn luôn). */
+function dopts(dk, items, cur, empty){
+  return options(items, cur, empty) + '<option value="__new__:' + dk + '">＋ Thêm mới vào Từ điển…</option>';
+}
 function options(items, cur, empty){
   let o = empty ? '<option value="">' + esc(empty) + '</option>' : '';
   items.forEach(i => { o += '<option value="' + esc(i.k) + '"' + (i.k === cur ? ' selected' : '') + '>' + esc(i.k) + '</option>'; });
@@ -1239,45 +1254,47 @@ function editorHTML(p, st){
   h += '</section>';
   if (c.ten){
     const vars = Array.from(new Set(st.fields.concat(['dd/MM/yyyy'], p.g === 'Văn thư' ? ['ma_van_thu', 'so_hieu', 'trich_yeu'] : [])));
-    let b = '<div class="fld"><label for="f-nameref">Tên phiếu</label><div class="ref"><select id="f-nameref" data-bind="nameRef" aria-label="Chọn mẫu tên phiếu">' + options(DICT.ten, st.nameRef, 'Tự soạn cho bước này') + '</select><span id="f-namestate">' + (st.nameRef ? '<span class="pill acc">Mẫu dùng chung</span>' : '<span class="pill">Tự soạn</span>') + '</span></div>' +
+    let b = '<div class="fld"><label for="f-nameref">Tên phiếu</label><div class="ref"><select id="f-nameref" data-bind="nameRef" aria-label="Chọn mẫu tên phiếu">' + dopts('ten', DICT.ten, st.nameRef, 'Tự soạn cho bước này') + '</select><span id="f-namestate">' + (st.nameRef ? '<span class="pill acc">Mẫu dùng chung</span>' : '<span class="pill">Tự soạn</span>') + '</span></div>' +
       '<textarea id="f-name" rows="2" spellcheck="false" aria-label="Khuôn tên phiếu">' + esc(st.nameTpl) + '</textarea>' +
       '<div class="help">Bấm để chèn giá trị vào tên:</div><div class="vchips">' + vars.map(v => '<button class="vchip" type="button" data-act="ins" data-v="' + esc(v) + '">' + esc(fname(v)) + '</button>').join('') + '</div></div>';
     b += '<div><div class="inline" style="margin-bottom:8px"><span class="lbl">Thử với dữ liệu</span><div class="seg"><button type="button" data-act="sample" data-v="0" aria-pressed="' + !state.long + '">Thông thường</button><button type="button" data-act="sample" data-v="1" aria-pressed="' + state.long + '">Rất dài</button></div></div><div id="pv-box">' + previewHTML(st.nameTpl, c.office && !!st.office) + '</div></div>';
-    b += '<div class="fld"><label for="f-contentref">Nội dung phiếu</label><div class="ref"><select id="f-contentref" data-bind="contentRef" aria-label="Chọn mẫu nội dung">' + options(DICT.noidung, st.contentRef, 'Tự soạn cho bước này') + '</select></div><textarea id="f-content" rows="3" aria-label="Nội dung phiếu" placeholder="Để trống nếu không đổi nội dung phiếu">' + esc(st.contentTpl) + '</textarea></div>';
+    b += '<div class="fld"><label for="f-contentref">Nội dung phiếu</label><div class="ref"><select id="f-contentref" data-bind="contentRef" aria-label="Chọn mẫu nội dung">' + dopts('noidung', DICT.noidung, st.contentRef, 'Tự soạn cho bước này') + '</select></div><textarea id="f-content" rows="3" aria-label="Nội dung phiếu" placeholder="Để trống nếu không đổi nội dung phiếu">' + esc(st.contentTpl) + '</textarea></div>';
     h += capSec('ten', 'Đặt tên và nội dung phiếu', b);
   }
   if (c.truong){
-    let b = '<div class="fchips" id="fchips">' + (st.fields.length ? st.fields.map((f, k) => fchip(f, 'rmfield', k)).join('') : '<span class="small muted">Chưa chọn trường nào.</span>') + '</div>';
-    b += '<div class="inline"><button class="btn sm" type="button" data-act="picker">' + icon(state.pickOpen ? 'minus' : 'plus') + (state.pickOpen ? 'Đóng danh sách' : 'Chọn trường') + '</button><select id="f-fieldset" data-bind="fieldset" style="width:auto" aria-label="Nạp nhóm trường">' + options(DICT.truong, '', 'Nạp nhóm trường có sẵn…') + '</select></div>';
+    let b = '<div class="sub-h"><b>1. Ghi vào bảng dữ liệu</b><span class="small muted">Trường Base chép vào bảng "' + esc(p.store) + '"</span></div><div class="fchips" id="fchips">' + (st.fields.length ? st.fields.map((f, k) => fchip(f, 'rmfield', k)).join('') : '<span class="small muted">Chưa chọn trường nào.</span>') + '</div>';
+    b += '<div class="inline"><button class="btn sm" type="button" data-act="picker">' + icon(state.pickOpen ? 'minus' : 'plus') + (state.pickOpen ? 'Đóng danh sách' : 'Chọn trường') + '</button><select id="f-fieldset" data-bind="fieldset" style="width:auto" aria-label="Nạp nhóm trường">' + dopts('truong', DICT.truong, '', 'Nạp nhóm trường có sẵn…') + '</select></div>';
     if (state.pickOpen) b += '<div class="picker"><label class="search">' + icon('search') + '<input type="text" id="pickq" placeholder="Tìm trường theo tên" value="' + esc(state.pickQ) + '" aria-label="Tìm trường"></label><div class="picklist" id="picklist">' + pickerList(p, st) + '</div></div>';
     if (st.baseFields){
       const miss = st.baseFields.filter(f => !st.fields.includes(f));
       b = '<div class="note info">Trên Base, khối này chạy sau bước <b>' + esc(st.baseFrom) + '</b>' + (st.baseVia ? ' (khi ' + esc(st.baseVia) + ')' : '') + '. Bước đó cho nhập ' + st.baseFields.length + ' trường.' + (miss.length ? ' Còn ' + miss.length + ' trường chưa chọn. <button class="linkbtn" type="button" data-act="basefields">Dùng đúng ' + st.baseFields.length + ' trường của Base</button>' : ' Đã chọn đủ.') + '</div>' + b;
     }
+    b += pushHTML(p, st);
     h += capSec('truong', 'Lưu dữ liệu phiếu', b);
   }
   if (c.file){
-    let b = '<div class="fld"><label for="f-drive">Cất file vào thư mục</label><select id="f-drive" data-bind="drive">' + options(DICT.thumuc, st.drive, 'Không cất vào Drive') + '</select></div>';
-    b += '<div class="row2"><div class="fld"><label for="f-src">Lấy file từ</label><select id="f-src" data-bind="src">' + options(DICT.file, st.src, 'Không lấy file') + '</select></div>' +
-         '<div class="fld"><label for="f-dst">Gửi file đã xử lý vào</label><select id="f-dst" data-bind="dst">' + options(DICT.file, st.dst, 'Không gửi') + '</select></div></div>';
+    let b = '<div class="fld"><label for="f-drive">Cất file vào thư mục</label><select id="f-drive" data-bind="drive">' + dopts('thumuc', DICT.thumuc, st.drive, 'Không cất vào Drive') + '</select></div>';
+    b += '<div class="row2"><div class="fld"><label for="f-src">Lấy file từ</label><select id="f-src" data-bind="src">' + dopts('file', DICT.file, st.src, 'Không lấy file') + '</select></div>' +
+         '<div class="fld"><label for="f-dst">Gửi file đã xử lý vào</label><select id="f-dst" data-bind="dst">' + dopts('file', DICT.file, st.dst, 'Không gửi') + '</select></div></div>';
     b += '<p class="help">File Word được chuyển sang PDF trước khi lưu. Thư mục chưa có sẽ được tạo.</p>';
     b += '<div class="fld"><label for="f-src2">Lưu thêm 1 file riêng</label><select id="f-src2" data-bind="src2">' + options(FILE2, st.src2, 'Không lưu thêm') + '</select><div class="help">VD vừa lưu văn bản chính vừa lưu phụ lục, hoặc lưu riêng file AI đã đọc. File này không thay file chính.</div></div>';
-    if (st.src2) b += '<div class="row2"><div class="fld"><label for="f-drive2">Thư mục cho file thứ 2</label><select id="f-drive2" data-bind="drive2">' + options(DICT.thumuc, st.drive2, 'Cùng thư mục file chính') + '</select></div>' +
+    if (st.src2) b += '<div class="row2"><div class="fld"><label for="f-drive2">Thư mục cho file thứ 2</label><select id="f-drive2" data-bind="drive2">' + dopts('thumuc', DICT.thumuc, st.drive2, 'Cùng thư mục file chính') + '</select></div>' +
       (st.src2 !== FILE_AI ? '<div class="fld"><label for="f-pick2">Trường có nhiều file thì lấy</label><input type="text" id="f-pick2" data-bind="pick2" value="' + esc(st.pick2 || '') + '" placeholder="1 · 2 · cuoi · tat_ca · chữ trong tên"></div>' : '') + '</div>';
     h += capSec('file', 'Lưu và chuyển file', b);
   }
   if (c.ai){
     const ai = DICT.ai.find(x => x.k === st.ai);
-    let b = '<div class="fld"><label for="f-ai">Mẫu AI</label><select id="f-ai" data-bind="ai">' + options(DICT.ai, st.ai, 'Chọn mẫu AI…') + '</select></div>';
-    b += '<div class="row2"><div class="fld"><label for="f-aisrc">AI đọc file</label><select id="f-aisrc" data-bind="aiSrc">' + options(DICT.file.filter(x => x.v !== 'DRIVE'), st.aiSrc, st.src ? 'Cùng file "' + st.src + '"' : 'Chọn file cho AI…') + '</select></div>' +
+    let b = '<div class="fld"><label for="f-ai">Mẫu AI</label><select id="f-ai" data-bind="ai">' + dopts('ai', DICT.ai, st.ai, 'Chọn mẫu AI…') + '</select></div>';
+    b += '<div class="row2"><div class="fld"><label for="f-aisrc">AI đọc file</label><select id="f-aisrc" data-bind="aiSrc">' + dopts('file', DICT.file.filter(x => x.v !== 'DRIVE'), st.aiSrc, st.src ? 'Cùng file "' + st.src + '"' : 'Chọn file cho AI…') + '</select></div>' +
       (st.aiSrc ? '<div class="fld"><label for="f-aipick">Trường có nhiều file thì đọc</label><input type="text" id="f-aipick" data-bind="aiPick" value="' + esc(st.aiPick || '') + '" placeholder="1 · 2 · cuoi · chữ trong tên, VD da ky"></div>' : '') + '</div>';
     if (st.aiSrc && st.aiSrc !== st.src) b += '<p class="help">AI đọc riêng file của "' + esc(st.aiSrc) + '"' + (st.src ? '; file chính lưu / gửi vẫn là "' + esc(st.src) + '"' : '') + '. Muốn lưu luôn file AI đã đọc: ở "Lưu và chuyển file" chọn "Lưu thêm 1 file riêng" → "' + FILE_AI + '".</p>';
-    if (ai) b += '<div class="aicard"><div><span class="k">Đọc file:</span> ' + esc(st.aiSrc || st.src || 'chưa chọn') + (st.aiPick ? ' (' + esc(st.aiPick) + ')' : '') + '</div><div><span class="k">Điền ' + ai.out.length + ' trường:</span> ' + ai.out.map(o => esc(fname(o[0]))).join(', ') + '</div><div><span class="k">Cách điền:</span> ' + (ai.ow ? 'ghi đè cả ô đã có giá trị' : 'chỉ điền ô đang trống') + ' · <span class="mono">' + esc(ai.model) + '</span></div></div>';
+    if (ai) b += '<div class="aicard"><div><span class="k">Đọc file:</span> ' + esc(st.aiSrc || st.src || 'chưa chọn') + (st.aiPick ? ' (' + esc(st.aiPick) + ')' : '') + '</div><div><span class="k">Cách điền:</span> ' + (ai.ow ? 'ghi đè cả ô đã có giá trị' : 'chỉ điền ô đang trống') + ' · <span class="mono">' + esc(ai.model) + '</span></div></div>';
+    if (ai) b += aiMapHTML(p, st, ai);
     if (!st.src && !st.aiSrc) b += '<div class="note">AI cần một file để đọc. <button class="linkbtn" type="button" data-act="needfile">Bật "Lưu và chuyển file" và chọn nơi lấy file</button></div>';
     h += capSec('ai', 'Đọc tài liệu bằng AI', b);
   }
   if (c.office){
-    let b = '<div class="row2"><div class="fld"><label for="f-office">Đơn vị trên Base Office</label><select id="f-office" data-bind="office">' + options(DICT.office, st.office, 'Chọn đơn vị…') + '</select></div>' +
+    let b = '<div class="row2"><div class="fld"><label for="f-office">Đơn vị trên Base Office</label><select id="f-office" data-bind="office">' + dopts('office', DICT.office, st.office, 'Chọn đơn vị…') + '</select></div>' +
       '<div class="fld"><span class="lbl">Cấp số văn bản ở bước này</span><label class="inline" for="f-capso"><span class="sw"><input type="checkbox" id="f-capso" data-bind="capso"' + (st.capso ? ' checked' : '') + '><span></span></span><span class="small">' + (st.capso ? 'Có cấp số' : 'Không cấp số') + '</span></label></div></div>';
     const o = DICT.office.find(x => x.k === st.office);
     if (o) b += '<dl class="kv"><dt>Mã đơn vị</dt><dd class="mono">' + esc(o.v) + '</dd><dt>Mã đánh số</dt><dd class="mono">' + esc(o.code) + '</dd><dt>Sổ mặc định</dt><dd class="mono">' + esc(o.book) + '</dd></dl>';
@@ -1294,7 +1311,7 @@ function editorHTML(p, st){
     const ex = st.exec, cat = CAT[p.g] || [];
     let b = '<div class="row2"><div class="fld"><label for="f-exfield">Lấy ID phiếu cần đẩy từ trường</label><select id="f-exfield" data-bind="exec.field"><option value="">Chọn trường…</option>' + cat.map(f => '<option value="' + f[0] + '"' + (f[0] === ex.field ? ' selected' : '') + '>' + esc(f[1]) + '</option>').join('') + '</select></div>' +
       '<div class="fld"><label for="f-exintent">Làm gì với phiếu đó</label><select id="f-exintent" data-bind="exec.intent"><option value=""' + (!ex.intent ? ' selected' : '') + '>Hoàn thành bước đang chờ</option><option value="approve"' + (ex.intent === 'approve' ? ' selected' : '') + '>Duyệt</option><option value="mark_done"' + (ex.intent === 'mark_done' ? ' selected' : '') + '>Đánh dấu hoàn thành</option></select></div></div>';
-    b += '<div class="row2"><div class="fld"><label for="f-exfrom">Gửi kèm file từ</label><select id="f-exfrom" data-bind="exec.from">' + options(DICT.file, ex.from, 'Không gửi file') + '</select></div><div class="fld"><label for="f-exto">vào trường của phiếu đó</label><select id="f-exto" data-bind="exec.to">' + options(DICT.file, ex.to, 'Chọn trường…') + '</select></div></div>';
+    b += '<div class="row2"><div class="fld"><label for="f-exfrom">Gửi kèm file từ</label><select id="f-exfrom" data-bind="exec.from">' + dopts('file', DICT.file, ex.from, 'Không gửi file') + '</select></div><div class="fld"><label for="f-exto">vào trường của phiếu đó</label><select id="f-exto" data-bind="exec.to">' + dopts('file', DICT.file, ex.to, 'Chọn trường…') + '</select></div></div>';
     b += '<div class="fld"><label for="f-exuser">Tài khoản thực hiện</label><input type="text" class="mono" id="f-exuser" data-bind="exec.user" value="' + esc(ex.user) + '" placeholder="Tài khoản được giao ở bước đang chờ"></div>';
     if (ex.user && ex.user !== 'adminsystem') b += '<div class="note">"' + esc(ex.user) + '" là tài khoản cá nhân, chỉ đẩy được phiếu do người này được giao. Nên cài một tài khoản hệ thống làm người thực hiện cố định ở bước đang chờ.</div>';
     b += '<p class="help">Hệ thống gửi lại đủ các trường của bước đang chờ, nên Base không xoá trắng trường nào.</p>';
@@ -1777,6 +1794,10 @@ document.addEventListener('click', e => {
     }
     case 'addstep': askAddStep(p); break;
     case 'capoff': st.caps[a.dataset.k] = false; markDirty(p.id + ':' + state.si + ':cap'); rerenderEditor(); break;
+    case 'pushmode': st.pushMode = a.dataset.v; if (st.pushMode === 'chon' && !st.pushFields) st.pushFields = st.fields.slice(); markDirty(p.id + ':' + state.si + ':push'); rerenderEditor(); break;
+    case 'aimap-add': st.aiMap = aiMapOf(st).map(r => Object.assign({}, r)).concat([{ai:'', truong:''}]); markDirty(p.id + ':' + state.si + ':aiMap'); rerenderEditor(); { const l = document.querySelectorAll('[data-aimap$=".ai"]'); if (l.length) l[l.length - 1].focus(); } break;
+    case 'aimap-rm': st.aiMap = aiMapOf(st).map(r => Object.assign({}, r)); st.aiMap.splice(+a.dataset.i, 1); markDirty(p.id + ':' + state.si + ':aiMap'); rerenderEditor(); break;
+    case 'aimap-reset': st.aiMap = null; markDirty(p.id + ':' + state.si + ':aiMap'); rerenderEditor(); break;
     case 'needfile': st.caps.file = true; markDirty(p.id + ':' + state.si + ':cap'); rerenderEditor(); openCap('file'); { const f = $('#f-src'); if (f) f.focus(); } break;
     case 'reviewed': st.copied = false; markDirty(p.id + ':' + state.si + ':rv'); rerenderEditor(); break;
     case 'sample': state.long = a.dataset.v === '1'; if (state.view === 'tu-dien') render(); else rerenderEditor(); break;
@@ -1959,9 +1980,16 @@ document.addEventListener('change', e => {
     const tb = dictTab(), it = DICT[tb.k][state.dsel];
     it[t.dataset.dbind] = t.type === 'checkbox' ? t.checked : t.value; markDirty('dict:' + tb.k + ':' + state.dsel + ':' + t.dataset.dbind); render(); return;
   }
+  if (t.dataset.bind && typeof t.value === 'string' && t.value.startsWith('__new__:')){
+    const st = curStep(), key = t.dataset.bind;
+    t.value = key === 'fieldset' ? '' : (key.split('.').reduce((o, k) => (o ? o[k] : ''), st) || '');
+    askDictAdd(e.target.dataset.newdk || t.querySelector('option[value^="__new__:"]').value.slice(8), key);
+    return;
+  }
   if (t.dataset.bind){
     const p = curProc(), st = curStep(), key = t.dataset.bind, val = t.type === 'checkbox' ? t.checked : t.value;
     if (key === 'nameRef'){ st.nameRef = val; const it = DICT.ten.find(i => i.k === val); if (it) st.nameTpl = it.v; }
+    else if (key === 'ai'){ st.ai = val; st.aiMap = null; }
     else if (key === 'contentRef'){ st.contentRef = val; const it = DICT.noidung.find(i => i.k === val); if (it) st.contentTpl = it.v; }
     else if (key === 'fieldset'){ const it = DICT.truong.find(i => i.k === val); if (it) it.v.split(',').map(s => s.trim()).filter(Boolean).forEach(f => { if (!st.fields.includes(f)) st.fields.push(f); }); }
     else if (key === 'block') st.block = val.trim();
@@ -2021,18 +2049,20 @@ function derivedChain(p, st){
   const c = st.caps;
   if (p.e === 'vanthu'){
     const k = c.ai && (st.src || st.aiSrc) ? (isDi(p) ? 'vt_di_ai' : 'vt_den_ai') : (isDi(p) && st.capso ? 'vt_di_cap_so' : (isDi(p) ? 'vt_di_chuyen_tiep' : 'vt_den_chuyen_tiep'));
-    const x = fileExtras(st), chain = PRESET[k][1].map(l => (l === 'doc_ai' && x.ai && st.src ? {loai:l, tham_so:x.ai} : {loai:l}));
+    const x = fileExtras(st), aiP = Object.assign({}, x.ai && st.src ? x.ai : {}, aiMapParam(st));
+    const pp = pushParam(st);
+    const chain = PRESET[k][1].map(l => (l === 'doc_ai' && Object.keys(aiP).length ? {loai:l, tham_so:aiP} : l === 'dong_bo_base' && Object.keys(pp).length ? {loai:l, tham_so:pp} : {loai:l}));
     if (x.save2){ const at = chain.findIndex(y => y.loai === 'dong_bo_base'); chain.splice(at < 0 ? chain.length : at, 0, x.save2); }
     return {key:k, label:PRESET[k][0] + (x.ai && st.src || x.save2 ? ' + file riêng' : ''), chain};
   }
   const ch = [], x = fileExtras(st);
   if (c.truong) ch.push('ghi_truong');
   if ((c.file && st.src) || (c.ai && !x.ai)) ch.push('tai_file');
-  if (c.ai) ch.push(x.ai ? {loai:'doc_ai', tham_so:x.ai} : 'doc_ai');
+  if (c.ai){ const aiP = Object.assign({}, x.ai || {}, aiMapParam(st)); ch.push(Object.keys(aiP).length ? {loai:'doc_ai', tham_so:aiP} : 'doc_ai'); }
   if (c.file && st.drive) ch.push(st.src ? 'luu_drive' : {loai:'luu_drive', tham_so:{tu:'ai'}});
   if (x.save2) ch.push(x.save2);
   if (c.ten) ch.push('dat_ten_phieu', 'dat_noi_dung');
-  if (isSet(st)) ch.push('dong_bo_base');
+  if (isSet(st)) ch.push(Object.keys(pushParam(st)).length ? {loai:'dong_bo_base', tham_so:pushParam(st)} : 'dong_bo_base');
   if (c.file && st.dst) ch.push('day_file_base');
   if (c.office) ch.push('tao_office');
   if (isSet(st)) ch.push('thong_bao');
@@ -2044,9 +2074,12 @@ const needsSrc = x => !(x.tham_so && x.tham_so.tu) || String(x.tham_so.tu).split
 const FILE_SRC_TXT = {ai:'file AI đã đọc', goc:'file gốc', pdf:'bản PDF', dang_xu_ly:'file đang xử lý'};
 function chainParamNote(x){
   const t = x.tham_so || {};
-  if (!t.tu || !['doc_ai', 'luu_drive'].includes(x.loai)) return '';
+  if (x.loai === 'dong_bo_base' && t.chi_truong) return '<div class="small muted">' + (t.chi_truong.length ? 'Chỉ ghi ngược ' + t.chi_truong.length + ' trường: ' + t.chi_truong.map(c => esc(fname(c))).join(', ') : 'Không ghi ngược trường nào (chỉ tên / nội dung)') + '</div>';
+  const km = x.loai === 'doc_ai' && t.ket_qua ? Object.entries(t.ket_qua) : null;
+  const kmTxt = km ? '<div class="small muted">Ghi ' + km.length + ' trường: ' + km.map(([a, b]) => esc(a) + ' → ' + esc(fname(b))).join(', ') + '</div>' : '';
+  if (!t.tu || !['doc_ai', 'luu_drive'].includes(x.loai)) return kmTxt;
   const src = String(t.tu).split(',').map(v => FILE_SRC_TXT[v.trim()] || fname(v.trim())).join(' + ');
-  return '<div class="small muted">' + (x.loai === 'doc_ai' ? 'Đọc riêng: ' : 'Lưu riêng: ') + esc(src) + (t.chon ? ' (' + esc(t.chon) + ')' : '') + (t.thu_muc ? ' → ' + esc(t.thu_muc) : '') + '</div>';
+  return '<div class="small muted">' + (x.loai === 'doc_ai' ? 'Đọc riêng: ' : 'Lưu riêng: ') + esc(src) + (t.chon ? ' (' + esc(t.chon) + ')' : '') + (t.thu_muc ? ' → ' + esc(t.thu_muc) : '') + '</div>' + kmTxt;
 }
 function chainCheck(chain){
   const have = new Set(), out = [];
@@ -2805,9 +2838,10 @@ function capSummary(k, p, st){
   const cut = (s, n) => { s = String(s || ''); return s.length > n ? s.slice(0, n - 1) + '…' : s; };
   switch (k){
     case 'ten': return st.nameTpl ? ['', 'Tên: ' + cut(st.nameTpl, 70)] : ['warn', 'Chưa có mẫu tên phiếu'];
-    case 'truong': return st.fields.length ? ['', st.fields.length + ' trường: ' + cut(st.fields.slice(0, 3).map(fname).join(', ') + (st.fields.length > 3 ? '…' : ''), 70)] : ['warn', 'Chưa chọn trường nào'];
+    case 'truong': { const m = pushMode(st), pt = m === 'khong' ? 'không ghi ngược' : m === 'chon' ? 'ghi ngược ' + (st.pushFields || []).length + ' trường' : 'ghi ngược tất cả';
+      return st.fields.length ? ['', 'Bảng: ' + st.fields.length + ' trường · Base: ' + pt] : ['warn', 'Chưa chọn trường nào']; }
     case 'file': { const x = [st.src && 'lấy từ ' + fname(st.src), st.drive && 'cất vào ' + st.drive, st.dst && 'gửi vào ' + fname(st.dst), st.src2 && 'lưu thêm ' + st.src2].filter(Boolean); return x.length ? ['', cut(x.join(' · '), 80)] : ['warn', 'Chưa chọn nơi lấy / cất / gửi file']; }
-    case 'ai': return !st.ai ? ['warn', 'Chưa chọn mẫu AI'] : (!st.src && !st.aiSrc ? ['warn', 'Mẫu ' + st.ai + ' · chưa có file để đọc'] : ['', 'Mẫu: ' + st.ai + (st.aiSrc && st.aiSrc !== st.src ? ' · đọc riêng ' + st.aiSrc : '')]);
+    case 'ai': return !st.ai ? ['warn', 'Chưa chọn mẫu AI'] : (!st.src && !st.aiSrc ? ['warn', 'Mẫu ' + st.ai + ' · chưa có file để đọc'] : ['', 'Mẫu: ' + st.ai + ' · ghi ' + aiMapOf(st).filter(r => r.truong).length + ' trường' + (st.aiMap ? ' (riêng)' : '') + (st.aiSrc && st.aiSrc !== st.src ? ' · đọc riêng ' + st.aiSrc : '')]);
     case 'office': return st.office ? ['', 'Đơn vị ' + st.office + (st.capso ? ' · có cấp số' : '')] : ['warn', 'Chưa chọn đơn vị Office'];
     case 'lt': return st.lt.length ? ['', st.lt.length + ' quy trình nhận: ' + cut(st.lt.map(t => t.proc).join(', '), 60)] : ['warn', 'Chưa có quy trình nhận'];
     case 'exec': return st.exec && st.exec.field && st.exec.user ? ['', 'ID từ ' + fname(st.exec.field) + ' · ' + st.exec.user] : ['warn', 'Chưa chọn trường ID / tài khoản'];
@@ -2995,6 +3029,109 @@ function modeRowHTML(p){
     (m === 'bong' && shadowStats(p).lech ? '<button class="btn sm" type="button" data-act="shadowview">Xem chỗ lệch</button>' : '') + '</div>';
 }
 
+/* -- ghi ngược lên Base: tat_ca (mặc định, như cũ) | chon | khong -- */
+const PUSH_MODES = [['tat_ca', 'Tất cả trường trong bảng'], ['chon', 'Chọn trường'], ['khong', 'Không ghi ngược']];
+const pushMode = st => st.pushMode || 'tat_ca';
+function pushParam(st){
+  const m = pushMode(st);
+  if (m === 'chon') return {chi_truong:(st.pushFields || []).slice()};
+  if (m === 'khong') return {chi_truong:[]};
+  return {};
+}
+function pushHTML(p, st){
+  const m = pushMode(st);
+  let h = '<div class="push-sec"><div class="sub-h"><b>2. Ghi ngược lên Base</b><span class="small muted">Sau khi xử lý, những trường nào được ghi lại vào phiếu trên Base. Trường không ghi ngược thì Base giữ nguyên giá trị cũ.</span></div>';
+  h += '<div class="seg" role="group" aria-label="Ghi ngược lên Base">' + PUSH_MODES.map(x => '<button type="button" data-act="pushmode" data-v="' + x[0] + '" aria-pressed="' + (m === x[0]) + '">' + x[1] + '</button>').join('') + '</div>';
+  if (m === 'chon'){
+    const pf = st.pushFields || [], cand = Array.from(new Set(st.fields.concat(pf)));
+    h += cand.length ? '<div class="lt-days">' + cand.map(c => '<label' + (st.fields.includes(c) ? '' : ' class="stale" title="Trường này chưa ghi vào bảng nên không có giá trị để ghi ngược"') + '><input type="checkbox" data-push value="' + esc(c) + '"' + (pf.includes(c) ? ' checked' : '') + '>' + esc(fname(c)) + '</label>').join('') + '</div>' : '<p class="small muted">Chọn trường ở phần 1 trước — chỉ trường có trong bảng mới ghi ngược được.</p>';
+    h += '<p class="small muted">' + pf.length + '/' + st.fields.length + ' trường sẽ ghi ngược.' + (pf.some(c => !st.fields.includes(c)) ? ' <span style="color:var(--warn)">Trường viền đứt chưa có trong bảng.</span>' : '') + '</p>';
+  } else if (m === 'khong') h += '<p class="small muted">Chỉ ghi vào bảng dữ liệu. Tên / nội dung phiếu (nếu bật "Đặt tên và nội dung phiếu") vẫn cập nhật lên Base.</p>';
+  else h += '<p class="small muted">Như trước đây: mọi trường service_ có giá trị trong bảng đều ghi ngược lên Base.</p>';
+  return h + '</div>';
+}
+
+/* -- đối chiếu trường AI trả về -> trường Base (riêng từng bước; mặc định lấy theo mẫu AI) -- */
+const AI_KEYS_VT = ['loai', 'so', 'ngay', 'trich', 'coquan', 'tomtat', 'nguoi_ky', 'so_trang'];
+// khoá JSON mà mẫu văn thư (backend readIncoming / readDraft) trả về, dùng khi dữ liệu đã lưu chưa ghi khoá
+const VT_AI_KEY = {service_loai_van_thu:'loai', service_so_ky_hieu_van_ban:'so', service_ngay_van_ban:'ngay', service_trich_yeu_noi_dung:'trich', service_don_vi_ban_hanh:'coquan'};
+const aiKeyOf = (ai, o) => o[2] || (/^Văn thư/.test(ai.k) && VT_AI_KEY[o[0]]) || o[1];
+function aiMapOf(st){
+  if (st.aiMap) return st.aiMap;
+  const ai = DICT.ai.find(x => x.k === st.ai);
+  return ai ? ai.out.map(o => ({ai:aiKeyOf(ai, o), truong:o[0]})) : [];
+}
+function aiMapParam(st){
+  if (!st.aiMap) return {};
+  const m = {}; st.aiMap.forEach(r => { if (String(r.ai || '').trim() && r.truong) m[r.ai.trim()] = r.truong; });
+  return {ket_qua:m};
+}
+function aiMapHTML(p, st, ai){
+  const rows = aiMapOf(st), codes = Array.from(new Set(stepFieldCodes(st, p).concat(rows.map(r => r.truong).filter(Boolean))));
+  const used = {}; rows.forEach(r => { if (r.truong) used[r.truong] = (used[r.truong] || 0) + 1; });
+  const keys = Array.from(new Set(ai.out.map(o => aiKeyOf(ai, o)).concat(AI_KEYS_VT)));
+  let h = '<div class="fld"><span class="lbl">Đối chiếu kết quả AI với trường Base</span><p class="help" style="margin:0 0 6px">Cột trái là tên khoá trong kết quả AI trả về (mẫu văn thư: loai, so, ngay, trich, coquan…); cột phải là trường trên phiếu Base nhận giá trị.</p><div class="aimap"><div class="aimap-h"><span>AI trả về</span><span></span><span>Ghi vào trường Base</span><span></span></div>';
+  rows.forEach((r, i) => {
+    h += '<div class="aimap-r' + (r.truong && used[r.truong] > 1 ? ' dup' : '') + '"><input type="text" data-aimap="' + i + '.ai" list="ai-keys" value="' + esc(r.ai) + '" aria-label="Trường AI trả về, dòng ' + (i + 1) + '" placeholder="VD: so"><span class="to" aria-hidden="true">→</span>' +
+      '<select data-aimap="' + i + '.truong" aria-label="Trường Base nhận, dòng ' + (i + 1) + '"><option value="">Chọn trường Base…</option>' + codes.map(c => '<option value="' + esc(c) + '"' + (c === r.truong ? ' selected' : '') + '>' + esc(fname(c) === c ? c : fname(c) + ' · ' + c) + '</option>').join('') + '</select>' +
+      '<button class="btn ghost sm" type="button" data-act="aimap-rm" data-i="' + i + '" aria-label="Bỏ dòng ' + (i + 1) + '">' + icon('x') + '</button></div>';
+  });
+  h += '<datalist id="ai-keys">' + keys.map(k => '<option value="' + esc(k) + '">').join('') + '</datalist></div>';
+  const dups = Object.keys(used).filter(k => used[k] > 1);
+  if (dups.length) h += '<div class="note" style="margin-top:6px">Trường ' + dups.map(c => '"' + esc(fname(c)) + '"').join(', ') + ' đang nhận từ 2 kết quả AI — kết quả sau sẽ ghi đè kết quả trước.</div>';
+  if (!rows.length) h += '<p class="small muted">Chưa có trường nào — AI đọc xong không ghi gì.</p>';
+  h += '<div class="inline" style="margin-top:6px;gap:8px"><button class="btn sm" type="button" data-act="aimap-add">' + icon('plus') + 'Thêm trường</button>' + (st.aiMap ? '<button class="linkbtn" type="button" data-act="aimap-reset">Về mặc định của mẫu "' + esc(st.ai) + '"</button><span class="pill acc">Riêng bước này</span>' : '<span class="small muted">Đang theo mẫu "' + esc(st.ai) + '"</span>') + '</div></div>';
+  return h;
+}
+
+/* -- thêm mục Từ điển ngay trong lúc cấu hình bước -- */
+function stepFieldCodes(st, p){
+  const svc = c => /^service_/.test(c), uniq = l => Array.from(new Set(l)).filter(svc);
+  const own = uniq((st.fields || []).concat(st.baseFields || [], ...(p ? p.steps.map(x => (x.fields || []).concat(x.baseFields || [])) : [])));
+  if (own.length) return own;
+  // quy trình chưa khai trường: lấy từ bộ trường trong Từ điển + các quy trình khác
+  return uniq([].concat(...DICT.truong.map(t => t.v.split(',').map(x => x.trim())), ...P.map(x => [].concat(...x.steps.map(y => y.fields || []))))).slice(0, 40);
+}
+function askDictAdd(dk, key){
+  const p = curProc(), st = curStep(), t = DTABS.find(x => x.k === dk); if (!p || !st || !t) return;
+  const codes = stepFieldCodes(st, p);
+  const nm = '<div class="fld"><label for="dlg-dk">Tên gọi</label><input type="text" id="dlg-dk" placeholder="VD: Văn thư đến – Đảng ủy"><div class="help">Tên hiện trong ô chọn. Không trùng mục đã có.</div></div>';
+  let body = '<p class="help" style="margin-bottom:10px">' + esc(t.help) + '</p>' + nm;
+  if (t.kind === 'tpl') body += '<div class="fld"><label for="dlg-dv">Khuôn tên</label><input type="text" id="dlg-dv" value="' + esc(st.nameTpl || '') + '" placeholder="VD: VT Đến - Số {so_hieu} | {trich_yeu}"></div>';
+  if (t.kind === 'txt') body += '<div class="fld"><label for="dlg-dv">Khuôn nội dung</label><textarea id="dlg-dv" rows="4">' + esc(st.contentTpl || '') + '</textarea></div>';
+  if (t.kind === 'path') body += '<div class="fld"><label for="dlg-dv">Đường dẫn Drive</label><input type="text" id="dlg-dv" class="mono" placeholder="Shared drives\\0. BHCK - 1. MASTER DATA\\…\\{yyyy}"></div>';
+  if (t.kind === 'list') body += '<div class="fld"><label for="dlg-dv">Danh sách trường (cách nhau dấu phẩy)</label><textarea id="dlg-dv" rows="3" class="mono">' + esc((st.fields || []).join(', ')) + '</textarea></div>';
+  if (t.kind === 'file') body += '<div class="fld"><label for="dlg-dv">Mã trường file trên Base</label><input type="text" id="dlg-dv" class="mono" list="dlg-dcodes" placeholder="service_…"><datalist id="dlg-dcodes">' + codes.map(c => '<option value="' + esc(c) + '">' + esc(fname(c)) + '</option>').join('') + '</datalist></div>';
+  if (t.kind === 'office') body += '<div class="row2"><div class="fld"><label for="dlg-dv">Mã đơn vị</label><input type="text" id="dlg-dv" class="mono" placeholder="publisher-…"></div><div class="fld"><label for="dlg-dcode">Mã ngắn khi đánh số</label><input type="text" id="dlg-dcode" class="mono" placeholder="VD: DU"></div></div><div class="fld"><label for="dlg-dbook">Sổ mặc định</label><input type="text" id="dlg-dbook" class="mono"></div>';
+  if (t.kind === 'ai'){
+    body += '<div class="fld"><label for="dlg-dv">Câu lệnh cho AI</label><textarea id="dlg-dv" rows="4" placeholder="VD: Đọc văn bản đến đính kèm và lấy số ký hiệu, ngày văn bản, trích yếu, cơ quan ban hành."></textarea></div>';
+    body += '<div class="fld"><span class="lbl">AI điền vào các trường</span>' + (codes.length ? '<div class="lt-days">' + codes.map(c => '<label><input type="checkbox" data-dout value="' + esc(c) + '">' + esc(fname(c)) + '</label>').join('') + '</div>' : '') + '<input type="text" id="dlg-dout" class="mono" placeholder="Trường khác: service_a, service_b" style="margin-top:6px"></div>';
+    body += '<div class="row2"><div class="fld"><label for="dlg-dmodel">Model</label><input type="text" id="dlg-dmodel" class="mono" value="gemini-3.1-flash-lite"></div><div class="fld"><span class="lbl">Cách điền</span><label class="inline small" for="dlg-dow"><input type="checkbox" id="dlg-dow"> Ghi đè cả ô đã có giá trị</label></div></div>';
+  }
+  dialog({title:'Thêm vào Từ điển: ' + t.label, sub:'Dùng ngay cho bước "' + (st.name || 'chưa đặt tên') + '", các bước khác cũng chọn được', okLabel:'Thêm và chọn', body,
+    onOk(b){
+      const g = id => ((b.querySelector('#' + id) || {}).value || '').trim();
+      const k = g('dlg-dk'), v = g('dlg-dv');
+      if (!k) return 'Cần tên gọi.';
+      if (DICT[dk].some(x => x.k === k)) return 'Đã có mục "' + k + '" trong ' + t.label + '.';
+      if (!v) return 'Cần ' + t.val.toLowerCase() + '.';
+      const it = {k, v, used:1};
+      if (t.kind === 'office') Object.assign(it, {code:g('dlg-dcode'), book:g('dlg-dbook') || '—'});
+      if (t.kind === 'ai'){
+        const outs = Array.from(b.querySelectorAll('[data-dout]:checked')).map(x => x.value).concat(g('dlg-dout').split(',').map(x => x.trim()).filter(Boolean));
+        if (!outs.length) return 'Chọn ít nhất 1 trường để AI điền.';
+        Object.assign(it, {inp:'', out:Array.from(new Set(outs)).map(c => [c, fname(c)]), model:g('dlg-dmodel') || 'gemini-3.1-flash-lite', ow:b.querySelector('#dlg-dow').checked});
+      }
+      if (t.kind === 'list') it.v = v.split(',').map(x => x.trim()).filter(Boolean).join(', ');
+      DICT[dk].push(it); markDirty('dict:' + dk + ':add');
+      if (key === 'nameRef'){ st.nameRef = k; st.nameTpl = it.v; }
+      else if (key === 'contentRef'){ st.contentRef = k; st.contentTpl = it.v; }
+      else if (key === 'fieldset') it.v.split(',').map(x => x.trim()).filter(Boolean).forEach(f => { if (!st.fields.includes(f)) st.fields.push(f); });
+      else setPath(st, key, k);
+      markDirty(p.id + ':' + state.si + ':' + key); rerenderEditor(); toast('Đã thêm "' + k + '" vào ' + t.label + ' và chọn cho bước này');
+    }});
+}
+
 /* -- lịch tạo phiếu tự động (cột backend: lich_loai, lich_ngay, lich_gio, tai_khoan, khoi_bat_dau, ten_phieu_tao, noi_dung_tao, lech_ngay, cot_luu_id, cot_luu_ten) -- */
 const LT_DOW = [['2', 'T2'], ['3', 'T3'], ['4', 'T4'], ['5', 'T5'], ['6', 'T6'], ['7', 'T7'], ['8', 'CN']];
 const ltPad = n => String(n).padStart(2, '0');
@@ -3091,7 +3228,7 @@ function askLichTao(p){
 }
 
 /* -- xuất bản: xem lại thay đổi + kiểm tra + ghi chú -- */
-const DIRTY_WHAT = {name:'tên bước', block:'Block ID', cap:'việc của bước', chain:'chuỗi chức năng', fields:'trường lưu', content:'mẫu nội dung', on:'bật / tắt', mode:'chế độ chạy', lich:'lịch tạo phiếu', fwUrl:'địa chỉ Apps Script', e:'loại xử lý', rv:'đã kiểm cấu hình chép', add:'thêm bước', 'new':'quy trình mới', nameRef:'mẫu tên phiếu', contentRef:'mẫu nội dung', drive:'thư mục Drive', src:'nơi lấy file', dst:'nơi gửi file', ai:'mẫu AI', office:'đơn vị Office', capso:'cấp số'};
+const DIRTY_WHAT = {name:'tên bước', block:'Block ID', cap:'việc của bước', chain:'chuỗi chức năng', fields:'trường lưu', content:'mẫu nội dung', on:'bật / tắt', mode:'chế độ chạy', push:'trường ghi ngược Base', aiMap:'đối chiếu trường AI', lich:'lịch tạo phiếu', fwUrl:'địa chỉ Apps Script', e:'loại xử lý', rv:'đã kiểm cấu hình chép', add:'thêm bước', 'new':'quy trình mới', nameRef:'mẫu tên phiếu', contentRef:'mẫu nội dung', drive:'thư mục Drive', src:'nơi lấy file', dst:'nơi gửi file', ai:'mẫu AI', office:'đơn vị Office', capso:'cấp số'};
 function dirtyLines(){
   const groups = new Map();
   const add = (g, t) => { if (!groups.has(g)) groups.set(g, new Set()); groups.get(g).add(t); };
@@ -3147,6 +3284,21 @@ document.addEventListener('change', e => {
   if (e.target.matches && e.target.matches('[data-lich]')) ltSync();
 });
 document.addEventListener('input', e => { if (e.target.matches && e.target.matches('[data-lich]')) ltSync(); });
+document.addEventListener('change', e => {
+  const t = e.target; if (!t.dataset || t.dataset.push === undefined) return;
+  const p = curProc(), st = curStep(); if (!p || !st) return;
+  const pf = (st.pushFields || []).filter(x => x !== t.value); if (t.checked) pf.push(t.value);
+  st.pushFields = st.fields.filter(x => pf.includes(x)).concat(pf.filter(x => !st.fields.includes(x)));
+  markDirty(p.id + ':' + state.si + ':push'); rerenderEditor();
+});
+document.addEventListener('change', e => {
+  const t = e.target; if (!t.dataset || t.dataset.aimap === undefined) return;
+  const p = curProc(), st = curStep(); if (!p || !st) return;
+  const [i, k] = t.dataset.aimap.split('.');
+  st.aiMap = aiMapOf(st).map(r => Object.assign({}, r)); if (!st.aiMap[+i]) return;
+  st.aiMap[+i][k] = t.value.trim(); markDirty(p.id + ':' + state.si + ':aiMap');
+  if (k === 'truong') rerenderEditor();
+});
 document.addEventListener('keydown', e => {
   if ($('#dlg').hidden) return;
   if (e.key === 'Escape'){ e.stopPropagation(); e.preventDefault(); dialogClose(); }
