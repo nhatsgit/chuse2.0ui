@@ -31,19 +31,7 @@
   --ok:var(--ok-fg); --ok-soft:var(--ok-bg); --warn:var(--warn-fg); --warn-soft:var(--warn-bg); --bad:var(--bad-fg); --bad-soft:var(--bad-bg);
   --shadow:var(--sh-2);
 }
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    --brand:#2f7a3d; --brand-600:#3a8a4b; --brand-700:#8fd39b; --brand-50:rgba(79,174,96,.10); --brand-100:rgba(79,174,96,.18); --brand-200:rgba(79,174,96,.38);
-    --gold:#cda852; --gold-700:#e0c071; --gold-100:rgba(205,168,82,.20); --gold-50:rgba(205,168,82,.10);
-    --mau-ink:#e6ece7; --ink-phu:#ccd6cf; --muted:#a9b5ad; --faint:#95a399;
-    --mau-line:#2c3830; --vach:#233027; --page:#101612; --mau-card:#171f19; --soft:#1c251f; --hover-bg:#223026; --row-hover:#1e2a22; --border-strong:#3a483f;
-    --ok-bg:rgba(79,174,96,.18); --ok-fg:#93d79f; --warn-bg:rgba(205,168,82,.18); --warn-fg:#e6c878; --bad-bg:rgba(240,96,76,.16); --bad-fg:#f4a597;
-    --info-bg:rgba(120,160,195,.18); --info-fg:#b0cbe0; --gray-bg:#26302a; --gray-fg:#c3cdc6;
-    --sh-1:0 0 0 1px rgba(0,0,0,.2); --sh-2:0 0 0 1px rgba(0,0,0,.25),0 12px 32px rgba(0,0,0,.45);
-    --scrim:rgba(0,0,0,.55);
-    color-scheme:dark;
-  }
-}
+/* mặc định sáng; tối chỉ khi bấm nút đổi giao diện (data-theme="dark", nhớ trong trình duyệt) */
 :root[data-theme="dark"]{
     --brand:#2f7a3d; --brand-600:#3a8a4b; --brand-700:#8fd39b; --brand-50:rgba(79,174,96,.10); --brand-100:rgba(79,174,96,.18); --brand-200:rgba(79,174,96,.38);
     --gold:#cda852; --gold-700:#e0c071; --gold-100:rgba(205,168,82,.20); --gold-50:rgba(205,168,82,.10);
@@ -657,6 +645,14 @@ details.tech pre{margin:8px 0 0;font-family:var(--mono);font-size:12px;white-spa
 .cap-b:focus-visible,.cap-row:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:8px}
 .cap-row{width:100%;display:flex;justify-content:space-between;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;color:inherit;font:inherit;text-align:left;cursor:pointer}
 .cap-row:hover{border-color:var(--line-strong)}
+.lt-days{display:flex;gap:6px;flex-wrap:wrap}
+.lt-days label{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border:1px solid var(--line);border-radius:99px;font-size:13px;cursor:pointer}
+.lt-days label:has(input:checked){background:var(--accent-soft);border-color:var(--accent);color:var(--accent-strong)}
+.lt-days input{margin:0}
+.lt-pv{background:var(--surface-2);border-radius:10px;padding:10px 12px;font-size:13px;display:flex;flex-direction:column;gap:4px}
+.lt-pv b{font-weight:600}
+.lt-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:640px){.lt-row{grid-template-columns:minmax(0,1fr)}}
 .cap-row b{display:block;font-weight:600;font-size:13px}
 .cap-row .d{display:block;font-size:12px;color:var(--muted);margin-top:2px}
 .cm-bg{position:fixed;inset:0;background:var(--scrim);z-index:45;display:flex;align-items:center;justify-content:center;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
@@ -741,6 +737,7 @@ const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp
 const enc = new TextEncoder();
 const OFFICE_MAX = 500, SERVICE_MAX = 255, PAD = 20;
 const officeBytes = s => enc.encode(String(s).replace(/\|/g, '&#124;')).length;
+try { if (localStorage.getItem('ck-theme') === 'dark') document.documentElement.dataset.theme = 'dark'; } catch (e) {}
 const icon = (id, cls) => '<svg class="ico ' + (cls || 'sm') + '"><use href="#i-' + id + '"/></svg>';
 
 function cutBytes(s, max){
@@ -837,8 +834,10 @@ const P = [
   {id:'kho-nhap-mnl',name:'Nhập mủ nguyên liệu_BHCK',  g:'Kho', e:'chuan', svc:50986, store:'XUAT_NHAP_KHO_BHCK', on:true},
   {id:'kho-xuat-vt', name:'Xuất vật tư_BHCK',          g:'Kho', e:'chuan', svc:50986, store:'XUAT_NHAP_KHO_BHCK', on:true},
   {id:'kho-xuat-mnl',name:'Xuất mủ nguyên liệu_BHCK',  g:'Kho', e:'chuan', svc:50986, store:'XUAT_NHAP_KHO_BHCK', on:false},
-  {id:'bc-cb',    name:'Báo cáo sản lượng chế biến', g:'Báo cáo', e:'chuan', svc:13681, store:'BC Chế biến', on:true},
-  {id:'bc-nhanh', name:'Báo cáo nhanh gửi lãnh đạo', g:'Báo cáo', e:'chuan', svc:43945, store:'BC Nhanh', on:true},
+  {id:'bc-cb',    name:'Báo cáo sản lượng chế biến', g:'Báo cáo', e:'chuan', svc:13681, store:'BC Chế biến', on:true,
+   lich:{on:true, loai:'Ngày', ngay:'', gio:'07:00', tk:'tk.tao.phieu', khoi:'13682', ten:'Báo cáo sản lượng chế biến ngày {dd/MM/yyyy}', nd:'Kính gửi Ban lãnh đạo NMCB.\nTổ thống kê gửi báo cáo sản lượng chế biến ngày {dd/MM/yyyy}.', lech:0, cotId:'root_id', cotTen:'root_name', tt:'[✅ Lúc 07:00:04 - Ngày 16/11/2026] Tự động kích hoạt thành công.'}},
+  {id:'bc-nhanh', name:'Báo cáo nhanh gửi lãnh đạo', g:'Báo cáo', e:'chuan', svc:43945, store:'BC Nhanh', on:true,
+   lich:{on:true, loai:'Tuần', ngay:'2,3,4,5,6,7', gio:'16:00', tk:'tk.tao.phieu', khoi:'', ten:'Báo cáo nhanh hàng ngày {dd/MM/yyyy}', nd:'', lech:0, cotId:'root_id', cotTen:'root_name', tt:'[❌ Lúc 16:00:02] Lỗi: Thiếu service_id / khoi_bat_dau / tai_khoan của quy trình'}},
   {id:'bc-tm-crck2', name:'Báo cáo thông minh ngày CRCK2', g:'Báo cáo', e:'lienthong', svc:37022, store:'BC TM-Nhanh', on:true},
   {id:'luong',    name:'Lương_Hồ sơ lương', g:'Lương – Thanh toán', e:'chuan', svc:38707, store:'Lương', on:true},
   {id:'ttoan',    name:'Tạm ứng/Thanh toán', g:'Lương – Thanh toán', e:'chuan', svc:54430, store:'Thanh toán', on:true}
@@ -1399,7 +1398,7 @@ function viewDetail(p){
   h += '<div class="inline"><label class="small muted" for="f-engine">Loại xử lý</label><select id="f-engine" data-pbind="e" style="width:auto">' + Object.keys(TYPES).map(k => '<option value="' + k + '"' + (k === p.e ? ' selected' : '') + '>' + TYPES[k][0] + '</option>').join('') + '</select>';
   h += '<label class="small muted" for="f-mode">Chế độ</label><select id="f-mode" data-pbind="mode" style="width:auto">' + Object.keys(MODES).map(k => '<option value="' + k + '"' + (k === (p.mode || 'that') ? ' selected' : '') + '>' + MODES[k] + '</option>').join('') + '</select>';
   h += '<label class="inline small" for="f-on"><span class="sw"><input type="checkbox" id="f-on" data-pbind="on"' + (p.on ? ' checked' : '') + '><span></span></span>' + (p.on ? 'Đang bật' : 'Đang tắt') + '</label><button class="btn sm" type="button" data-act="dupproc">Nhân bản</button><button class="btn ghost sm" type="button" data-act="askdelproc">Xoá</button></div></div>';
-  h += modeRowHTML(p);
+  h += modeRowHTML(p) + lichTaoRowHTML(p);
   if (state.confirm === 'proc:' + p.id) h += confirmBox('Xoá quy trình "' + esc(p.name) + '" và toàn bộ ' + p.steps.length + ' bước cấu hình? Dịch vụ trên Base không bị ảnh hưởng.', 'delproc', 'Xoá quy trình');
   h += '<div class="ptabs" role="tablist"><button class="ptab" role="tab" type="button" data-act="ptab" data-v="cfg" aria-selected="' + (state.ptab === 'cfg') + '">Cấu hình từng bước</button><button class="ptab" role="tab" type="button" data-act="ptab" data-v="flow" aria-selected="' + (state.ptab === 'flow') + '">Lưu đồ trên Base</button></div>';
   if (state.ptab === 'flow'){
@@ -1745,8 +1744,8 @@ document.addEventListener('click', e => {
   const act = a.dataset.act, p = curProc(), st = curStep();
   switch (act){
     case 'theme': {
-      const root = document.documentElement, cur = root.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-      root.dataset.theme = cur === 'dark' ? 'light' : 'dark'; break;
+      const root = document.documentElement, cur = root.dataset.theme === 'dark' ? 'dark' : 'light';
+      root.dataset.theme = cur === 'dark' ? 'light' : 'dark'; try { localStorage.setItem('ck-theme', root.dataset.theme); } catch (err) {} break;
     }
     case 'open': closeDrawer(); state.fsel = null; state.pid = a.dataset.pid; state.si = +(a.dataset.si || 0); state.ptab = 'cfg'; state.pickOpen = false; go('quy-trinh'); break;
     case 'back': state.pid = null; render(); window.scrollTo(0, 0); break;
@@ -2996,8 +2995,103 @@ function modeRowHTML(p){
     (m === 'bong' && shadowStats(p).lech ? '<button class="btn sm" type="button" data-act="shadowview">Xem chỗ lệch</button>' : '') + '</div>';
 }
 
+/* -- lịch tạo phiếu tự động (cột backend: lich_loai, lich_ngay, lich_gio, tai_khoan, khoi_bat_dau, ten_phieu_tao, noi_dung_tao, lech_ngay, cot_luu_id, cot_luu_ten) -- */
+const LT_DOW = [['2', 'T2'], ['3', 'T3'], ['4', 'T4'], ['5', 'T5'], ['6', 'T6'], ['7', 'T7'], ['8', 'CN']];
+const ltPad = n => String(n).padStart(2, '0');
+/** Thay {dd/MM/yyyy} {yyyy} {MM} {dd} {HH:mm}... theo ngày (giống parseTemplateWithDate của backend). */
+function ltFill(tpl, d){
+  return String(tpl || '').replace(/\{([^{}]+)\}/g, (m, f) => /^[dMyHms\/\-.: ]+$/.test(f) ? f.replace(/yyyy/g, d.getFullYear()).replace(/yy/g, String(d.getFullYear()).slice(2)).replace(/MM/g, ltPad(d.getMonth() + 1)).replace(/dd/g, ltPad(d.getDate())).replace(/HH/g, ltPad(d.getHours())).replace(/mm/g, ltPad(d.getMinutes())) : m);
+}
+/** Giờ chạy kế tiếp (job chạy mỗi giờ, phút 0). Tuần: Thứ 2 = 2 … CN = 8. */
+function ltNext(l, from){
+  const h = parseInt(String(l.gio || '').split(':')[0], 10); if (isNaN(h)) return null;
+  const days = String(l.ngay || '').split(',').map(x => x.trim()).filter(Boolean);
+  const d = new Date(from || Date.now()); d.setMinutes(0, 0, 0); d.setHours(h);
+  if (d <= (from || new Date())) d.setDate(d.getDate() + 1);
+  for (let i = 0; i < 62; i++, d.setDate(d.getDate() + 1)){
+    const dow = d.getDay() === 0 ? '8' : String(d.getDay() + 1);
+    if (l.loai === 'Ngày' || (l.loai === 'Tuần' && days.includes(dow)) || (l.loai === 'Tháng' && days[0] === String(d.getDate()))) return new Date(d);
+  }
+  return null;
+}
+const ltDate = d => ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][d.getDay()] + ' ' + ltPad(d.getDate()) + '/' + ltPad(d.getMonth() + 1) + '/' + d.getFullYear();
+function ltWhen(l){
+  if (l.loai === 'Tuần'){ const ds = String(l.ngay || '').split(',').map(x => x.trim()); return (ds.length === 7 ? 'Mọi ngày' : ds.length === 6 && !ds.includes('8') ? 'Thứ 2 – Thứ 7' : ds.map(x => (LT_DOW.find(y => y[0] === x) || [0, x])[1]).join(', ')) + ' lúc ' + l.gio; }
+  if (l.loai === 'Tháng') return 'Ngày ' + (l.ngay || '?') + ' hằng tháng lúc ' + l.gio;
+  return 'Hằng ngày lúc ' + l.gio;
+}
+const ltStartBlock = p => { const s = p.steps.find(x => x.start) || p.steps[0]; return s ? String(s.block) : ''; };
+function ltMissing(p, l){
+  const m = [];
+  if (!l.gio) m.push('giờ chạy'); if (!String(l.tk || '').trim()) m.push('tài khoản tạo phiếu'); if (!String(l.khoi || ltStartBlock(p)).trim()) m.push('khối bắt đầu'); if (!String(l.ten || '').trim()) m.push('tên phiếu');
+  if (l.loai === 'Tuần' && !String(l.ngay || '').trim()) m.push('ngày trong tuần');
+  if (l.loai === 'Tháng' && !(+l.ngay >= 1 && +l.ngay <= 31)) m.push('ngày trong tháng');
+  return m;
+}
+function lichTaoRowHTML(p){
+  const l = p.lich;
+  let d;
+  if (!l || !l.on) d = l ? 'Đang tắt · ' + esc(ltWhen(l)) : 'Chưa đặt — phiếu chỉ được tạo khi có người bấm tạo trên Base';
+  else {
+    const miss = ltMissing(p, l), nx = ltNext(l);
+    d = esc(ltWhen(l)) + (miss.length ? ' · <span style="color:var(--bad)">thiếu ' + esc(miss.join(', ')) + '</span>' : nx ? ' · lần tới ' + ltDate(nx) : '');
+    if (l.tt) d += '<br><span style="color:var(--' + (/❌/.test(l.tt) ? 'bad' : 'ok') + ')">Lần gần nhất: ' + esc(l.tt.replace(/^\[(.)\s*/, '$1 [')) + '</span>';
+  }
+  return '<div style="margin-bottom:14px"><button type="button" class="cap-row" data-act="lichtao"><span><b>' + icon('play') + ' Lịch tạo phiếu tự động' + (l && l.on ? ' <span class="pill ok">Đang bật</span>' : '') + '</b><span class="d">' + d + '</span></span><span class="cap-go">' + (l ? 'Thiết lập ›' : 'Đặt lịch ›') + '</span></button></div>';
+}
+function ltRead(b, p){
+  const v = id => (b.querySelector('#' + id) || {}).value || '';
+  const loai = v('dlg-lloai');
+  return {on: b.querySelector('#dlg-lon').checked, loai, gio: v('dlg-lgio'),
+    ngay: loai === 'Tuần' ? Array.from(b.querySelectorAll('[data-ltd]:checked')).map(x => x.value).join(',') : loai === 'Tháng' ? v('dlg-lthang').trim() : '',
+    tk: v('dlg-ltk').trim(), khoi: v('dlg-lkhoi').trim(), ten: v('dlg-lten'), nd: v('dlg-lnd'), lech: parseInt(v('dlg-llech'), 10) || 0,
+    cotId: v('dlg-lcid').trim() || 'root_id', cotTen: v('dlg-lcten').trim() || 'root_name', tt: (p.lich || {}).tt || ''};
+}
+function ltSync(){
+  const b = $('#dlg-body'), p = curProc(); if (!b || !b.querySelector('#dlg-lloai') || !p) return;
+  const l = ltRead(b, p);
+  b.querySelector('#lt-tuan').hidden = l.loai !== 'Tuần';
+  b.querySelector('#lt-thang').hidden = l.loai !== 'Tháng';
+  const nx = ltNext(l), miss = ltMissing(p, l);
+  let pv = '';
+  if (!l.on) pv = '<span class="muted">Lịch đang tắt — không tạo phiếu.</span>';
+  else if (miss.length) pv = '<span style="color:var(--bad)">Còn thiếu: ' + esc(miss.join(', ')) + '</span>';
+  else if (nx){
+    const tgt = new Date(nx); tgt.setDate(tgt.getDate() + l.lech);
+    pv = '<div>Lần chạy tới: <b>' + ltDate(nx) + ' lúc ' + ltPad(nx.getHours()) + ':00</b></div><div>Tạo phiếu: <b>' + esc(ltFill(l.ten, tgt)) + '</b></div>' +
+      '<div class="small muted">Tài khoản <span class="mono">' + esc(l.tk) + '</span> · khối <span class="mono">' + esc(l.khoi || ltStartBlock(p)) + '</span> · ghi ID phiếu vào cột <span class="mono">' + esc(l.cotId) + '</span> ở dòng ngày ' + ltPad(tgt.getDate()) + '/' + ltPad(tgt.getMonth() + 1) + ' của bảng "' + esc(p.store) + '"</div>';
+  } else pv = '<span style="color:var(--bad)">Không tìm được ngày chạy trong 2 tháng tới.</span>';
+  b.querySelector('#lt-pv').innerHTML = pv;
+}
+function askLichTao(p){
+  const l = Object.assign({on:true, loai:'Ngày', ngay:'', gio:'07:00', tk:'', khoi:'', ten:'', nd:'', lech:0, cotId:'root_id', cotTen:'root_name'}, p.lich || {});
+  const hours = Array.from({length:24}, (_, h) => ltPad(h) + ':00');
+  const days = String(l.ngay || '').split(',');
+  const tenOpts = DICT.ten.map(t => '<option value="' + esc(t.v) + '">' + esc(t.k) + '</option>').join('');
+  let body = '<label class="inline" for="dlg-lon" style="margin-bottom:12px"><span class="sw"><input type="checkbox" id="dlg-lon" data-lich' + (l.on ? ' checked' : '') + '><span></span></span>Tự tạo phiếu theo lịch</label>';
+  body += '<div class="lt-row"><div class="fld"><label for="dlg-lloai">Lặp lại</label><select id="dlg-lloai" data-lich>' + ['Ngày', 'Tuần', 'Tháng'].map(x => '<option' + (x === l.loai ? ' selected' : '') + ' value="' + x + '">' + {Ngày:'Hằng ngày', Tuần:'Theo thứ trong tuần', Tháng:'Hằng tháng'}[x] + '</option>').join('') + '</select></div>' +
+    '<div class="fld"><label for="dlg-lgio">Giờ chạy</label><select id="dlg-lgio" data-lich>' + hours.map(x => '<option' + (x === l.gio ? ' selected' : '') + '>' + x + '</option>').join('') + '</select></div>' +
+    '<div class="fld"><label for="dlg-llech">Phiếu cho ngày</label><select id="dlg-llech" data-lich>' + [[-1, 'Hôm qua'], [0, 'Hôm nay'], [1, 'Ngày mai']].map(x => '<option value="' + x[0] + '"' + (x[0] === +l.lech ? ' selected' : '') + '>' + x[1] + '</option>').join('') + '</select></div></div>';
+  body += '<div class="fld" id="lt-tuan"><span class="lbl">Chạy vào</span><div class="lt-days">' + LT_DOW.map(x => '<label><input type="checkbox" data-ltd data-lich value="' + x[0] + '"' + (days.includes(x[0]) ? ' checked' : '') + '>' + x[1] + '</label>').join('') + '</div></div>';
+  body += '<div class="fld" id="lt-thang"><label for="dlg-lthang">Ngày trong tháng</label><input type="number" min="1" max="31" id="dlg-lthang" data-lich value="' + esc(l.loai === 'Tháng' ? l.ngay : '') + '" style="max-width:120px"></div>';
+  body += '<div class="row2"><div class="fld"><label for="dlg-ltk">Tạo bằng tài khoản Base</label><input type="text" id="dlg-ltk" class="mono" data-lich value="' + esc(l.tk) + '" placeholder="tên đăng nhập Base"><div class="help">Nên dùng tài khoản chung của phòng, không dùng tài khoản cá nhân.</div></div>' +
+    '<div class="fld"><label for="dlg-lkhoi">Khối bắt đầu</label><input type="text" id="dlg-lkhoi" class="mono" data-lich value="' + esc(l.khoi) + '" placeholder="' + esc(ltStartBlock(p) || 'Block ID') + '"><div class="help">Để trống = khối bắt đầu của quy trình.</div></div></div>';
+  body += '<div class="fld"><label for="dlg-lten">Tên phiếu</label><div class="ref"><select id="dlg-ltenref" aria-label="Chọn mẫu tên"><option value="">Chọn mẫu tên có sẵn…</option>' + tenOpts + '</select></div><input type="text" id="dlg-lten" data-lich value="' + esc(l.ten) + '" placeholder="VD: Báo cáo sản lượng ngày {dd/MM/yyyy}"></div>';
+  body += '<div class="fld"><label for="dlg-lnd">Nội dung phiếu</label><textarea id="dlg-lnd" rows="3" data-lich placeholder="Để trống nếu không cần">' + esc(l.nd) + '</textarea><div class="help">Dùng <span class="mono">{dd/MM/yyyy}</span>, <span class="mono">{yyyy}</span>, <span class="mono">{MM}</span>… theo ngày của phiếu.</div></div>';
+  body += '<details style="margin-bottom:12px"><summary class="small">Ghi ID phiếu vào bảng dữ liệu</summary><div class="row2" style="margin-top:8px"><div class="fld"><label for="dlg-lcid">Cột lưu ID phiếu</label><input type="text" id="dlg-lcid" class="mono" data-lich value="' + esc(l.cotId) + '"></div><div class="fld"><label for="dlg-lcten">Cột lưu tên phiếu</label><input type="text" id="dlg-lcten" class="mono" data-lich value="' + esc(l.cotTen) + '"></div></div><p class="help">Hệ thống tìm dòng đúng ngày của phiếu trong bảng "' + esc(p.store) + '" rồi ghi vào 2 cột này.</p></details>';
+  body += '<div class="lt-pv" id="lt-pv" aria-live="polite"></div>';
+  if (l.tt) body += '<p class="small muted" style="margin-top:8px">Lần chạy gần nhất: ' + esc(l.tt) + '</p>';
+  dialog({title:'Lịch tạo phiếu tự động', sub:p.name, okLabel:'Lưu lịch', body,
+    onOk(b){
+      const n = ltRead(b, p), miss = ltMissing(p, n);
+      if (n.on && miss.length) return 'Còn thiếu: ' + miss.join(', ') + '.';
+      p.lich = n; markDirty(p.id + ':lich'); render(); toast(n.on ? 'Đã đặt lịch: ' + ltWhen(n) : 'Đã tắt lịch tạo phiếu');
+    }});
+  ltSync();
+}
+
 /* -- xuất bản: xem lại thay đổi + kiểm tra + ghi chú -- */
-const DIRTY_WHAT = {name:'tên bước', block:'Block ID', cap:'việc của bước', chain:'chuỗi chức năng', fields:'trường lưu', content:'mẫu nội dung', on:'bật / tắt', mode:'chế độ chạy', fwUrl:'địa chỉ Apps Script', e:'loại xử lý', rv:'đã kiểm cấu hình chép', add:'thêm bước', 'new':'quy trình mới', nameRef:'mẫu tên phiếu', contentRef:'mẫu nội dung', drive:'thư mục Drive', src:'nơi lấy file', dst:'nơi gửi file', ai:'mẫu AI', office:'đơn vị Office', capso:'cấp số'};
+const DIRTY_WHAT = {name:'tên bước', block:'Block ID', cap:'việc của bước', chain:'chuỗi chức năng', fields:'trường lưu', content:'mẫu nội dung', on:'bật / tắt', mode:'chế độ chạy', lich:'lịch tạo phiếu', fwUrl:'địa chỉ Apps Script', e:'loại xử lý', rv:'đã kiểm cấu hình chép', add:'thêm bước', 'new':'quy trình mới', nameRef:'mẫu tên phiếu', contentRef:'mẫu nội dung', drive:'thư mục Drive', src:'nơi lấy file', dst:'nơi gửi file', ai:'mẫu AI', office:'đơn vị Office', capso:'cấp số'};
 function dirtyLines(){
   const groups = new Map();
   const add = (g, t) => { if (!groups.has(g)) groups.set(g, new Set()); groups.get(g).add(t); };
@@ -3046,7 +3140,13 @@ document.addEventListener('click', e => {
   if (a.dataset.act === 'dlgok') dialogOk();
   else if (a.dataset.act === 'dlgclose') dialogClose();
   else if (a.dataset.act === 'modeset'){ const p = curProc(); if (p) askMode(p, p.mode || 'that'); }
+  else if (a.dataset.act === 'lichtao'){ const p = curProc(); if (p) askLichTao(p); }
 });
+document.addEventListener('change', e => {
+  if (e.target.id === 'dlg-ltenref' && e.target.value){ const t = $('#dlg-lten'); if (t) t.value = e.target.value; e.target.value = ''; ltSync(); return; }
+  if (e.target.matches && e.target.matches('[data-lich]')) ltSync();
+});
+document.addEventListener('input', e => { if (e.target.matches && e.target.matches('[data-lich]')) ltSync(); });
 document.addEventListener('keydown', e => {
   if ($('#dlg').hidden) return;
   if (e.key === 'Escape'){ e.stopPropagation(); e.preventDefault(); dialogClose(); }
