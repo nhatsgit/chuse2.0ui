@@ -9,8 +9,10 @@ w.scrollTo = () => {}; w.HTMLElement.prototype.scrollIntoView = function () {};
 const q = s => d.querySelector(s);
 const click = sel => { const el = typeof sel === 'string' ? q(sel) : sel; if (!el) throw new Error('khong thay ' + sel); el.dispatchEvent(new w.MouseEvent('click', { bubbles: true })); };
 const set = (sel, v) => { const el = q(sel); if (!el) throw new Error('khong thay ' + sel); if (el.type === 'checkbox') el.checked = v; else el.value = v; el.dispatchEvent(new w.Event('change', { bubbles: true })); };
+const capIsOn = k => !!d.querySelector('[data-cap-on="' + k + '"]');
+const capAddT = k => { if (capIsOn(k)) return; const b = d.querySelector('[data-act="capnew"]'); if (!b) throw new Error('khong co nut them viec'); b.dispatchEvent(new w.MouseEvent('click', { bubbles: true })); const o = d.querySelector('[data-act="capadd"][data-k="' + k + '"]'); if (!o) throw new Error('popup khong co viec ' + k); o.dispatchEvent(new w.MouseEvent('click', { bubbles: true })); };
 const T = (name, fn) => { try { fn(); console.log('OK   ' + name); } catch (e) { console.log('FAIL ' + name + ' -> ' + e.message); errs.push(name); } };
-const capOpen = k => { const c = q('#cap-' + k); if (!c.checked){ c.checked = true; c.dispatchEvent(new w.Event('change', { bubbles: true })); } if (q('#capmodal').hidden) click('[data-act="capopen"][data-k="' + k + '"]'); };
+const capOpen = k => { capAddT(k); if (q('#capmodal').hidden) click('[data-act="capopen"][data-k="' + k + '"]'); };
 
 setTimeout(() => {
   T('mẫu AI: chọn "Thêm mới" -> hộp nhập, giữ nguyên lựa chọn cũ khi huỷ', () => {

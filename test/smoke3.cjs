@@ -8,6 +8,8 @@ w.scrollTo = () => {}; w.HTMLElement.prototype.scrollIntoView = function () {};
 const q = s => d.querySelector(s), qa = s => Array.from(d.querySelectorAll(s));
 const click = sel => { const el = typeof sel === 'string' ? q(sel) : sel; if (!el) throw new Error('khong thay ' + sel); el.dispatchEvent(new w.MouseEvent('click', { bubbles: true })); };
 const change = (el, v) => { if (!el) throw new Error('khong thay phan tu'); if (typeof v === 'boolean') el.checked = v; else el.value = v; el.dispatchEvent(new w.Event('change', { bubbles: true })); };
+const capIsOn = k => !!d.querySelector('[data-cap-on="' + k + '"]');
+const capAddT = k => { if (capIsOn(k)) return; const b = d.querySelector('[data-act="capnew"]'); if (!b) throw new Error('khong co nut them viec'); b.dispatchEvent(new w.MouseEvent('click', { bubbles: true })); const o = d.querySelector('[data-act="capadd"][data-k="' + k + '"]'); if (!o) throw new Error('popup khong co viec ' + k); o.dispatchEvent(new w.MouseEvent('click', { bubbles: true })); };
 const T = (name, fn) => { try { fn(); console.log('OK   ' + name); } catch (e) { console.log('FAIL ' + name + ' -> ' + e.message); errs.push(name); } };
 const stepByName = re => qa('#rail .step').find(b => re.test(b.textContent));
 
@@ -27,7 +29,7 @@ setTimeout(() => {
   T('goi y Base: bo 2 truong roi dung lai 16', () => {
     click(q('#fchips [data-act="rmfield"]')); click(q('#fchips [data-act="rmfield"]'));
     if (qa('#fchips .fchip').length !== 14) throw new Error('chua bo');
-    click('[data-act="capoff"][data-k="truong"]'); change(q('#cap-truong'), true);
+    click('[data-act="capoff"][data-k="truong"]'); capAddT('truong');
     if (!/Còn 2 trường chưa chọn/.test(q('#sec-truong').textContent)) throw new Error('khong bao thieu: ' + q('#sec-truong .note').textContent);
     click('[data-act="basefields"]'); if (qa('#fchips .fchip').length !== 16) throw new Error('khong ve 16');
   });

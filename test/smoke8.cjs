@@ -9,6 +9,8 @@ w.scrollTo = () => {}; w.HTMLElement.prototype.scrollIntoView = function () {};
 const q = s => d.querySelector(s), qa = s => Array.from(d.querySelectorAll(s));
 const click = sel => { const el = typeof sel === 'string' ? q(sel) : sel; if (!el) throw new Error('khong thay ' + sel); el.dispatchEvent(new w.MouseEvent('click', { bubbles: true })); };
 const change = (el, v) => { if (typeof el === 'string') el = q(el); if (!el) throw new Error('khong thay phan tu'); if (typeof v === 'boolean') el.checked = v; else el.value = v; el.dispatchEvent(new w.Event('change', { bubbles: true })); };
+const capIsOn = k => !!d.querySelector('[data-cap-on="' + k + '"]');
+const capAddT = k => { if (capIsOn(k)) return; const b = d.querySelector('[data-act="capnew"]'); if (!b) throw new Error('khong co nut them viec'); b.dispatchEvent(new w.MouseEvent('click', { bubbles: true })); const o = d.querySelector('[data-act="capadd"][data-k="' + k + '"]'); if (!o) throw new Error('popup khong co viec ' + k); o.dispatchEvent(new w.MouseEvent('click', { bubbles: true })); };
 const T = (name, fn) => { try { fn(); console.log('OK   ' + name); } catch (e) { console.log('FAIL ' + name + ' -> ' + e.message); errs.push(name); } };
 const open = () => !q('#capmodal').hidden;
 const card = k => q('[data-act="capopen"][data-k="' + k + '"]');
@@ -17,12 +19,13 @@ setTimeout(() => {
   T('trang bước không còn các mục thiết lập xếp chồng', () => {
     click('tr[data-pid="kho-nhap-vt"]'); click('[data-act="step"][data-i="3"]');
     if (q('#editor #sec-ai') || q('#editor #sec-ten') || q('#editor #sec-chain')) throw new Error('van con muc trong trang');
-    if (qa('#editor .caps .cap').length !== 7) throw new Error('so the ' + qa('#editor .caps .cap').length);
+    if (!q('#editor .caps [data-act="capnew"]')) throw new Error('khong co nut them viec');
+    if (qa('#editor .caps .cap.on').length !== qa('#editor .caps [data-act="capdel"]').length) throw new Error('the bat thieu nut x');
   });
   T('thẻ việc đang bật có tóm tắt + "Thiết lập ›"; thẻ tắt hiện mô tả', () => {
     if (!/Thiết lập ›/.test(card('ai').textContent)) throw new Error(card('ai').textContent);
     if (!/Mẫu: /.test(card('ai').textContent)) throw new Error('tom tat AI ' + card('ai').textContent);
-    if (/Thiết lập/.test(card('office').textContent)) throw new Error('the tat van hien thiet lap');
+    if (card('office')) throw new Error('viec chua bat van hien the');
   });
   T('bấm thẻ -> popup đúng việc, có tên quy trình + bước; Esc đóng', () => {
     click(card('ai'));
@@ -38,7 +41,7 @@ setTimeout(() => {
     click(card('ten')); click('#capmodal .cm-f [data-act="capclose"]'); if (open()) throw new Error('Xong khong dong');
   });
   T('bật việc bằng công tắc -> tự mở popup; chọn xong tóm tắt trên thẻ cập nhật', () => {
-    change('#cap-office', true);
+    capAddT('office');
     if (!open() || !q('#capmodal #f-office')) throw new Error('khong tu mo');
     if (!/⚠ Chưa chọn đơn vị Office/.test(card('office').textContent)) throw new Error('khong canh bao chua chon');
     change('#f-office', 'BHCK');
@@ -47,10 +50,13 @@ setTimeout(() => {
   });
   T('tắt việc ở chân popup -> đóng popup, thẻ về trạng thái tắt', () => {
     click('#cm-off'); if (open()) throw new Error('khong dong');
-    if (q('#cap-office').checked) throw new Error('van bat');
+    if (capIsOn('office')) throw new Error('van bat');
   });
   T('bấm thẻ đang tắt -> bật luôn + mở popup', () => {
-    click(card('lt')); if (!open() || !q('#capmodal #sec-lt')) throw new Error('khong mo'); if (!q('#cap-lt').checked) throw new Error('khong bat');
+    click('[data-act="capnew"]'); if (q('#dlg').hidden || !q('[data-act="capadd"][data-k="lt"]')) throw new Error('popup them viec khong co lt');
+    if (q('[data-act="capadd"][data-k="ai"]')) throw new Error('viec da bat van nam trong danh sach');
+    click('[data-act="capadd"][data-k="lt"]'); if (!q('#dlg').hidden) throw new Error('popup them khong dong');
+    if (!open() || !q('#capmodal #sec-lt')) throw new Error('khong mo cau hinh'); if (!capIsOn('lt')) throw new Error('khong bat');
     click('#cm-off');
   });
   T('chuỗi chức năng: 1 dòng tóm tắt, bấm mở popup sửa được', () => {
@@ -60,6 +66,14 @@ setTimeout(() => {
     if (!/chuỗi riêng/.test(card('chain').textContent)) throw new Error('dong tom tat chua cap nhat');
   });
   T('đổi sang bước khác -> popup tự đóng', () => { click('[data-act="step"][data-i="1"]'); if (open()) throw new Error('van mo'); });
+  T('nút × bỏ việc: thẻ biến mất, việc quay lại danh sách ＋, thêm lại vẫn giữ thiết lập cũ', () => {
+    capAddT('office'); q('#f-office').value = 'BHCK'; q('#f-office').dispatchEvent(new w.Event('change', { bubbles: true })); click('[data-act="capclose"]');
+    click('[data-act="capdel"][data-k="office"]');
+    if (capIsOn('office')) throw new Error('khong bo');
+    click('[data-act="capnew"]'); if (!q('[data-act="capadd"][data-k="office"]')) throw new Error('khong quay lai danh sach'); click('#dlg-cancel');
+    capAddT('office'); if (q('#f-office').value !== 'BHCK') throw new Error('mat thiet lap cu');
+    click('[data-act="capclose"]');
+  });
   console.log(errs.length ? '\nLOI: ' + errs.join(' | ') : '\nTAT CA OK');
   process.exit(errs.length ? 1 : 0);
 }, 60);

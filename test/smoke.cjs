@@ -10,6 +10,8 @@ const q = s => d.querySelector(s);
 const click = sel => { const el = typeof sel === 'string' ? q(sel) : sel; if (!el) throw new Error('khong thay ' + sel); el.dispatchEvent(new w.MouseEvent('click', { bubbles: true })); };
 const change = (el, v) => { if (!el) throw new Error('khong thay phan tu'); if (typeof v === 'boolean') el.checked = v; else el.value = v; el.dispatchEvent(new w.Event('change', { bubbles: true })); };
 const input = (el, v) => { if (!el) throw new Error('khong thay o nhap'); el.value = v; el.dispatchEvent(new w.Event('input', { bubbles: true })); };
+const capIsOn = k => !!d.querySelector('[data-cap-on="' + k + '"]');
+const capAddT = k => { if (capIsOn(k)) return; const b = d.querySelector('[data-act="capnew"]'); if (!b) throw new Error('khong co nut them viec'); b.dispatchEvent(new w.MouseEvent('click', { bubbles: true })); const o = d.querySelector('[data-act="capadd"][data-k="' + k + '"]'); if (!o) throw new Error('popup khong co viec ' + k); o.dispatchEvent(new w.MouseEvent('click', { bubbles: true })); };
 const T = (name, fn) => { try { fn(); console.log('OK   ' + name); } catch (e) { console.log('FAIL ' + name + ' -> ' + e.message); errs.push(name); } };
 const later = (ms, fn) => setTimeout(fn, ms);
 
@@ -23,12 +25,12 @@ later(50, () => {
   T('go ten phieu cap nhat xem truoc', () => { capOpen('ten'); if (q('#sec-ai')) throw new Error('popup cu chua dong'); const ta = q('#f-name'); input(ta, ta.value + ' {service_khach_hang}'); if (!q('#pv-box em')) throw new Error('khong bao thieu du lieu'); });
   T('du lieu rat dai', () => { click('[data-act="sample"][data-v="1"]'); if (!q('#pv-box')) throw new Error('mat xem truoc'); });
   T('tat viec AI', () => { capOpen('ai'); click('[data-act="capoff"][data-k="ai"]'); if (q('#sec-ai') || !q('#capmodal').hidden) throw new Error('van con'); });
-  T('bat lai AI bang cong tac', () => { change(q('#cap-ai'), true); if (!q('#sec-ai')) throw new Error('khong mo lai'); });
+  T('bat lai AI bang cong tac', () => { capAddT('ai'); if (!q('#sec-ai')) throw new Error('khong mo lai'); });
   T('bo chon truong: tim + tick', () => { capOpen('truong'); click('[data-act="picker"]'); input(q('#pickq'), 'khách'); change(q('#picklist input[type=checkbox]'), true); if (!/Khách hàng/.test(q('#fchips').textContent)) throw new Error('chua them'); });
   T('bo mot truong', () => { const n = d.querySelectorAll('#fchips .fchip').length; click(q('#fchips [data-act="rmfield"]')); if (d.querySelectorAll('#fchips .fchip').length !== n - 1) throw new Error('khong bo'); });
   T('nap nhom truong', () => { change(q('#f-fieldset'), 'Kho nhập – Phiếu'); });
-  T('bat Office + chon don vi', () => { change(q('#cap-office'), true); change(q('#f-office'), 'BHCK'); if (!/publisher-47/.test(q('#sec-office').innerHTML)) throw new Error('khong hien ma don vi'); });
-  T('bat cho phieu khac di tiep', () => { change(q('#cap-exec'), true); if (!q('#f-exfield')) throw new Error('khong co o'); change(q('#f-exfield'), 'service_so_phieu'); });
+  T('bat Office + chon don vi', () => { capAddT('office'); change(q('#f-office'), 'BHCK'); if (!/publisher-47/.test(q('#sec-office').innerHTML)) throw new Error('khong hien ma don vi'); });
+  T('bat cho phieu khac di tiep', () => { capAddT('exec'); if (!q('#f-exfield')) throw new Error('khong co o'); change(q('#f-exfield'), 'service_so_phieu'); });
   T('chay thu buoc', () => { click('[data-act="dry"]'); if (q('#drawer').hidden) throw new Error('khong mo'); if (d.querySelectorAll('.trace li').length < 5) throw new Error('it buoc'); click('[data-act="close"]'); });
   T('tab luu do', () => { click('[data-act="ptab"][data-v="flow"]'); if (!q('#fcd .fc-node')) throw new Error('trong'); click('[data-act="fview"][data-v="ds"]'); if (!q('.flow .fl')) throw new Error('danh sach trong'); click('[data-act="fview"][data-v="sd"]'); click('[data-act="ptab"][data-v="cfg"]'); });
   T('them buoc', () => { const n = d.querySelectorAll('#rail .step').length; click('[data-act="addstep"]'); if (q('#dlg').hidden) throw new Error('khong hoi'); q('#dlg-block').value = 'abc'; click('#dlg-ok'); if (q('#dlg-err').hidden) throw new Error('khong bat block sai'); q('#dlg-block').value = '99999'; q('#dlg-sname').value = 'Bước thử'; click('#dlg-ok'); if (d.querySelectorAll('#rail .step').length !== n + 1) throw new Error('khong them'); if (!/Bước thử/.test(q('#editor h2').textContent)) throw new Error('sai ten'); });

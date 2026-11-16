@@ -654,6 +654,21 @@ details.tech pre{margin:8px 0 0;font-family:var(--mono);font-size:12px;white-spa
 .cap .sw{padding:12px 0 12px 12px;flex:none}
 .cap-b{flex:1;min-width:0;text-align:left;background:none;border:0;padding:10px 12px 10px 0;color:inherit;font:inherit;cursor:pointer;display:flex;flex-direction:column;gap:2px}
 .cap-b .d.warn{color:var(--warn)}
+.cap.on{position:relative}
+.cap.on .cap-b{padding-left:12px}
+.cap-x{flex:none;align-self:flex-start;margin:6px 6px 0 0;width:28px;height:28px;display:grid;place-items:center;border:0;border-radius:7px;background:transparent;color:var(--muted);cursor:pointer}
+.cap-x:hover{background:var(--bad-soft);color:var(--bad)}
+.cap-x:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.cap-add{border:1.5px dashed var(--line-strong);background:transparent;color:inherit;font:inherit;text-align:left;cursor:pointer;padding:10px 12px;align-items:center;gap:10px}
+.cap-add:hover{border-color:var(--accent);background:var(--accent-soft)}
+.cap-plus{flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--accent);color:var(--on-accent);font-size:18px;font-weight:700}
+.cap-add b{display:block;font-size:13px}
+.cap-add .d{display:block;font-size:12px;color:var(--muted)}
+.cap-pick{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
+.cap-opt{display:flex;flex-direction:column;gap:3px;text-align:left;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:inherit;font:inherit;cursor:pointer}
+.cap-opt:hover,.cap-opt:focus-visible{border-color:var(--accent);background:var(--accent-soft);outline:none}
+.cap-opt b{font-size:13.5px}
+.cap-opt .d{font-size:12px;color:var(--muted);line-height:1.35}
 .cap-go{font-size:12px;color:var(--accent-strong);font-weight:600;margin-top:4px}
 .cap-b:focus-visible,.cap-row:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:8px}
 .cap-row{width:100%;display:flex;justify-content:space-between;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;color:inherit;font:inherit;text-align:left;cursor:pointer}
@@ -736,7 +751,7 @@ details.tech pre{margin:8px 0 0;font-family:var(--mono);font-size:12px;white-spa
 </div>
 <div class="ck-man" id="ckMan"></div>
 <div id="dlg" class="cm-bg dlg-bg" hidden><div class="cm dlg" role="dialog" aria-modal="true" aria-labelledby="dlg-title"><div class="cm-h"><div class="grow"><h2 id="dlg-title"></h2><div class="small muted" id="dlg-sub"></div></div><button class="btn ghost sm" type="button" data-act="dlgclose" aria-label="Đóng">✕</button></div><div class="cm-b" id="dlg-body"></div><div class="dlg-err note bad" id="dlg-err" role="alert" hidden></div><div class="cm-f"><button class="btn ghost" type="button" id="dlg-cancel" data-act="dlgclose">Huỷ</button><button class="btn primary" type="button" id="dlg-ok" data-act="dlgok">Đồng ý</button></div></div></div>
-<div id="capmodal" class="cm-bg" hidden><div class="cm" role="dialog" aria-modal="true" aria-labelledby="cm-title"><div class="cm-h"><div class="grow"><h2 id="cm-title"></h2><div class="small muted" id="cm-sub"></div></div><button class="btn ghost sm" type="button" data-act="capclose" aria-label="Đóng">✕</button></div><div class="cm-b" id="cm-body"></div><div class="cm-f"><button class="btn ghost sm" type="button" id="cm-off" data-act="capoff" data-k="">Tắt việc này</button><button class="btn primary" type="button" data-act="capclose">Xong</button></div></div></div>
+<div id="capmodal" class="cm-bg" hidden><div class="cm" role="dialog" aria-modal="true" aria-labelledby="cm-title"><div class="cm-h"><div class="grow"><h2 id="cm-title"></h2><div class="small muted" id="cm-sub"></div></div><button class="btn ghost sm" type="button" data-act="capclose" aria-label="Đóng">✕</button></div><div class="cm-b" id="cm-body"></div><div class="cm-f"><button class="btn ghost sm" type="button" id="cm-off" data-act="capoff" data-k="">Bỏ việc này</button><button class="btn primary" type="button" data-act="capclose">Xong</button></div></div></div>
 <div id="drawer" class="drawer-bg" hidden><aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="dr-title" id="drawer-panel"></aside></div>
 <div id="toast" class="toast" role="status" hidden></div>
 
@@ -1251,7 +1266,7 @@ function editorHTML(p, st){
   h += '<section class="ed-sec"><div class="row2"><div class="fld"><label for="f-sname">Tên bước</label><input type="text" id="f-sname" data-bind="name" value="' + esc(st.name) + '"></div>' +
        '<div class="fld"><label for="f-block">Block ID trên Base</label><input type="text" class="mono" id="f-block" data-bind="block" value="' + esc(st.block) + '"></div></div></section>';
   // bước này làm gì
-  h += '<section class="ed-sec"><header><h3>Bước này làm gì?</h3><span class="small muted">Bật việc cần làm, bấm vào việc để thiết lập</span></header>' + capCardsHTML(p, st);
+  h += '<section class="ed-sec"><header><h3>Bước này làm gì?</h3><span class="small muted">Bấm ＋ để thêm việc, × để bỏ, bấm vào việc để thiết lập</span></header>' + capCardsHTML(p, st);
   if (!isSet(st)) h += '<div class="note">Bước này chưa làm gì. Base vẫn gửi tín hiệu tới nhưng hệ thống bỏ qua.</div>';
   h += '</section>';
   if (c.ten){
@@ -2852,13 +2867,33 @@ function capSummary(k, p, st){
   return ['', ''];
 }
 function capCardsHTML(p, st){
-  const c = st.caps;
-  return '<div class="caps">' + CAPS.map(cp => {
-    const on = !!c[cp.k], sm = on ? capSummary(cp.k, p, st) : null;
-    return '<div class="cap' + (on ? ' on' : '') + '"><label class="sw" for="cap-' + cp.k + '" title="' + (on ? 'Tắt' : 'Bật') + ' việc này"><input type="checkbox" id="cap-' + cp.k + '" data-cap="' + cp.k + '"' + (on ? ' checked' : '') + ' aria-label="' + (on ? 'Tắt ' : 'Bật ') + esc(cp.t) + '"><span></span></label>' +
-      '<button type="button" class="cap-b" data-act="capopen" data-k="' + cp.k + '"><b>' + cp.t + '</b>' +
-      (on ? '<span class="d' + (sm[0] ? ' warn' : '') + '">' + (sm[0] ? '⚠ ' : '') + esc(sm[1]) + '</span><span class="cap-go">Thiết lập ›</span>' : '<span class="d">' + cp.d + '</span>') + '</button></div>';
-  }).join('') + '</div>';
+  const c = st.caps, on = CAPS.filter(cp => c[cp.k]), left = CAPS.length - on.length;
+  return '<div class="caps">' + on.map(cp => {
+    const sm = capSummary(cp.k, p, st);
+    return '<div class="cap on" data-cap-on="' + cp.k + '"><button type="button" class="cap-b" data-act="capopen" data-k="' + cp.k + '"><b>' + cp.t + '</b>' +
+      '<span class="d' + (sm[0] ? ' warn' : '') + '">' + (sm[0] ? '⚠ ' : '') + esc(sm[1]) + '</span><span class="cap-go">Thiết lập ›</span></button>' +
+      '<button type="button" class="cap-x" data-act="capdel" data-k="' + cp.k + '" title="Bỏ việc này" aria-label="Bỏ việc ' + esc(cp.t) + '">' + icon('x') + '</button></div>';
+  }).join('') + (left ? '<button type="button" class="cap cap-add" data-act="capnew"><span class="cap-plus" aria-hidden="true">＋</span><span><b>Thêm việc</b><span class="d">' + (on.length ? 'Còn ' + left + ' việc có thể thêm' : 'Bước này chưa làm gì — bấm để chọn việc') + '</span></span></button>' : '') + '</div>';
+}
+function askCapAdd(){
+  const p = curProc(), st = curStep(); if (!p || !st) return;
+  const left = CAPS.filter(cp => !st.caps[cp.k]);
+  dialog({title:'Thêm việc cho bước', sub:p.name + ' · bước "' + (st.name || 'chưa đặt tên') + '"', okLabel:'Đóng',
+    body:'<p class="help" style="margin-bottom:10px">Chọn 1 việc — popup thiết lập của việc đó mở ngay sau khi chọn.</p><div class="cap-pick">' + left.map(cp => '<button type="button" class="cap-opt" data-act="capadd" data-k="' + cp.k + '"><b>' + cp.t + '</b><span class="d">' + cp.d + '</span></button>').join('') + '</div>',
+    onOk(){ return true; }});
+}
+function capAdd(k){
+  const p = curProc(), st = curStep(); if (!p || !st) return;
+  st.caps[k] = true;
+  if (k === 'exec' && !st.exec) st.exec = {on:true, field:'', user:'', intent:'', from:'', to:''};
+  markDirty(p.id + ':' + state.si + ':cap'); rerenderEditor(); openCap(k);
+}
+function capDel(k){
+  const p = curProc(), st = curStep(); if (!p || !st) return;
+  st.caps[k] = false; markDirty(p.id + ':' + state.si + ':cap');
+  if (state.capOpen === k) closeCap();
+  rerenderEditor();
+  const cp = CAPS.find(x => x.k === k); toast('Đã bỏ "' + (cp ? cp.t : k) + '". Bấm ＋ Thêm việc để thêm lại — thiết lập cũ vẫn giữ.');
 }
 function chainRowHTML(p, st){
   const r = chainOf(p, st), n = r.chain.filter(x => !x.tat).length, warn = chainCheck(r.chain).length;
@@ -3289,6 +3324,9 @@ document.addEventListener('click', e => {
   const a = e.target.closest('[data-act]'); if (!a) return;
   if (a.dataset.act === 'dlgok') dialogOk();
   else if (a.dataset.act === 'dlgclose') dialogClose();
+  else if (a.dataset.act === 'capadd'){ const k = a.dataset.k; dialogClose(); capAdd(k); }
+  else if (a.dataset.act === 'capnew') askCapAdd();
+  else if (a.dataset.act === 'capdel') capDel(a.dataset.k);
   else if (a.dataset.act === 'modeset'){ const p = curProc(); if (p) askMode(p, p.mode || 'that'); }
   else if (a.dataset.act === 'lichtao'){ const p = curProc(); if (p) askLichTao(p); }
 });

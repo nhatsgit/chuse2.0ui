@@ -8,6 +8,8 @@ w.scrollTo = () => {}; w.HTMLElement.prototype.scrollIntoView = function () {};
 const q = s => d.querySelector(s), qa = s => Array.from(d.querySelectorAll(s));
 const click = sel => { const el = typeof sel === 'string' ? q(sel) : sel; if (!el) throw new Error('khong thay ' + sel); el.dispatchEvent(new w.MouseEvent('click', { bubbles: true })); };
 const change = (el, v) => { if (!el) throw new Error('khong thay phan tu'); if (typeof v === 'boolean') el.checked = v; else el.value = v; el.dispatchEvent(new w.Event('change', { bubbles: true })); };
+const capIsOn = k => !!d.querySelector('[data-cap-on="' + k + '"]');
+const capAddT = k => { if (capIsOn(k)) return; const b = d.querySelector('[data-act="capnew"]'); if (!b) throw new Error('khong co nut them viec'); b.dispatchEvent(new w.MouseEvent('click', { bubbles: true })); const o = d.querySelector('[data-act="capadd"][data-k="' + k + '"]'); if (!o) throw new Error('popup khong co viec ' + k); o.dispatchEvent(new w.MouseEvent('click', { bubbles: true })); };
 const T = (name, fn) => { try { fn(); console.log('OK   ' + name); } catch (e) { console.log('FAIL ' + name + ' -> ' + e.message); errs.push(name); } };
 const card = id => qa('.wzh').find(c => c.querySelector('[data-id="' + id + '"]'));
 const P = () => { const v = d.createElement('script'); v.textContent = 'window.__P = P;'; d.body.appendChild(v); return w.__P; };
@@ -55,7 +57,7 @@ setTimeout(() => {
     if (steps.some(b => /51149/.test(b.textContent))) throw new Error('van co 51149');
     if (q('#f-on') && q('#f-on').checked) throw new Error('dang bat');
     click(steps.find(b => /51151/.test(b.textContent)));
-    if (!q('#cap-ai').checked || !q('#cap-file').checked || !q('#cap-truong').checked) throw new Error('caps');
+    if (!capIsOn('ai') || !capIsOn('file') || !capIsOn('truong')) throw new Error('caps');
     capOpen('truong');
     if (qa('#fchips .fchip').length !== 7) throw new Error('truong ' + qa('#fchips .fchip').length);
   });
@@ -65,7 +67,7 @@ setTimeout(() => {
     click('#fcd .fc-hook[data-id="51153"]');
     if (!q('#fpanel #editor') || !/51153/.test(q('#fpanel #editor').textContent)) throw new Error('khong mo cau hinh');
     if (!q('#fcd .fc-hook[data-id="51153"]').classList.contains('cur')) throw new Error('khong danh dau dang chon');
-    change(q('#fpanel #cap-ai'), true);
+    capAddT('ai');
     if (!/AI/.test(q('#fcd .fc-hook[data-id="51153"] .fc-tags').textContent)) throw new Error('o so do khong cap nhat');
   });
   T('so do: bam webhook chua cau hinh -> them vao cau hinh', () => {

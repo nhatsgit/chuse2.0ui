@@ -8,6 +8,8 @@ w.addEventListener('error', e => errs.push('ERR ' + e.message));
 w.scrollTo = () => {}; w.HTMLElement.prototype.scrollIntoView = function () {};
 const q = s => d.querySelector(s), qa = s => Array.from(d.querySelectorAll(s));
 const click = sel => { const el = typeof sel === 'string' ? q(sel) : sel; if (!el) throw new Error('khong thay ' + sel); el.dispatchEvent(new w.MouseEvent('click', { bubbles: true })); };
+const capIsOn = k => !!d.querySelector('[data-cap-on="' + k + '"]');
+const capAddT = k => { if (capIsOn(k)) return; const b = d.querySelector('[data-act="capnew"]'); if (!b) throw new Error('khong co nut them viec'); b.dispatchEvent(new w.MouseEvent('click', { bubbles: true })); const o = d.querySelector('[data-act="capadd"][data-k="' + k + '"]'); if (!o) throw new Error('popup khong co viec ' + k); o.dispatchEvent(new w.MouseEvent('click', { bubbles: true })); };
 const T = (name, fn) => { try { fn(); console.log('OK   ' + name); } catch (e) { console.log('FAIL ' + name + ' -> ' + e.message); errs.push(name); } };
 const chainText = () => { click('[data-act="capclose"]'); click('[data-act="capopen"][data-k="chain"]'); const t = q('#cm-body').textContent; click('[data-act="capclose"]'); click('[data-act="capopen"][data-k="truong"]'); return t; };
 
@@ -25,10 +27,9 @@ setTimeout(() => {
     const rail = qa('#rail .step');
     for (let i = 0; i < rail.length; i++){
       click(qa('#rail .step')[i]);
-      const cap = q('#cap-truong'); if (!cap) continue;
-      if (!cap.checked){ cap.checked = true; cap.dispatchEvent(new w.Event('change', { bubbles: true })); }
+      capAddT('truong');
       if (q('#capmodal').hidden) click('[data-act="capopen"][data-k="truong"]');
-      if (qa('#fchips .fchip').length >= 2 && !q('#cap-ai').checked) break;
+      if (qa('#fchips .fchip').length >= 2 && !capIsOn('ai')) break;
       click('[data-act="capclose"]');
     }
     click('[data-act="pushmode"][data-v="chon"]');
@@ -57,7 +58,7 @@ setTimeout(() => {
   });
   T('trường AI đọc: hiện ở phần 1 (thẻ AI), luôn gửi lên Base kể cả "Không ghi ngược"', () => {
     click('[data-act="capclose"]');
-    const cap = q('#cap-ai'); cap.checked = true; cap.dispatchEvent(new w.Event('change', { bubbles: true }));
+    capAddT('ai');
     if (q('#capmodal').hidden) click('[data-act="capopen"][data-k="ai"]');
     const s = q('#f-ai'); s.value = 'Kho – đọc phiếu xuất nhập kho'; s.dispatchEvent(new w.Event('change', { bubbles: true }));
     const af = qa('[data-aimap$=".truong"]').map(x => x.value).filter(Boolean);
@@ -75,7 +76,7 @@ setTimeout(() => {
   T('văn thư: mẫu chuỗi có sẵn cũng nhận lọc ghi ngược', () => {
     click('[data-act="capclose"]'); click('[data-act="back"]'); click('tr[data-pid="vtd-du"]');
     const st = qa('#rail .step').find(x => /Xử lý văn thư/.test(x.textContent)); click(st);
-    const cap = q('#cap-truong'); if (!cap.checked){ cap.checked = true; cap.dispatchEvent(new w.Event('change', { bubbles: true })); }
+    capAddT('truong');
     if (q('#capmodal').hidden) click('[data-act="capopen"][data-k="truong"]');
     click('[data-act="pushmode"][data-v="khong"]');
     if (!/Không ghi ngược trường nào/.test(chainText())) throw new Error('van thu khong loc');
