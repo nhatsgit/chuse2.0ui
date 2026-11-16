@@ -40,6 +40,15 @@ setTimeout(() => {
     if (!new RegExp('Chỉ ghi ngược ' + n + ' trường').test(chainText())) throw new Error('chuoi khong loc');
     if (!new RegExp('Base: ghi ngược ' + n + ' trường').test(q('[data-act="capopen"][data-k="truong"]').textContent)) throw new Error('the tom tat');
   });
+  T('trường ghi vào DB: ghi ngược đúng các trường phần 1, bỏ 1 trường ở phần 1 thì chuỗi đổi theo', () => {
+    click('[data-act="pushmode"][data-v="db"]');
+    const n = qa('#fchips .fchip').length;
+    if (!new RegExp('Ghi ngược đúng ' + n + ' trường ở phần 1').test(q('#cm-body').textContent)) throw new Error('khong hien so truong');
+    if (!new RegExp('Chỉ ghi ngược ' + n + ' trường').test(chainText())) throw new Error('chuoi khong theo DB');
+    click('#fchips [data-act="rmfield"]');
+    const ct = chainText(); if (!new RegExp('Chỉ ghi ngược ' + (n - 1) + ' trường').test(ct)) throw new Error('khong doi theo phan 1: n=' + n + ' ' + ct.slice(ct.indexOf('Đồng bộ'), ct.indexOf('Đồng bộ') + 200));
+    if (!/Base: ghi ngược trường DB/.test(q('[data-act="capopen"][data-k="truong"]').textContent)) throw new Error('the tom tat');
+  });
   T('không ghi ngược: chuỗi ghi rõ chỉ tên / nội dung; đổi lại tất cả thì bỏ lọc', () => {
     click('[data-act="pushmode"][data-v="khong"]');
     if (!/Không ghi ngược trường nào/.test(chainText())) throw new Error('chuoi khong ghi ro');

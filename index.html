@@ -1751,8 +1751,8 @@ function addField(code){
 }
 function refreshFieldChips(){
   const st = curStep(), el = $('#fchips'); if (!st || !el) return;
-  el.innerHTML = st.fields.length ? st.fields.map((f, k) => fchip(f, 'rmfield', k)).join('') : '<span class="small muted">Chưa chọn trường nào.</span>';
-  const rail = $('#rail'); if (rail) rail.innerHTML = railHTML(curProc());
+  // vẽ lại cả bước: phần ghi ngược Base + chuỗi chức năng phụ thuộc danh sách trường
+  rerenderEditor(); const q2 = $('#pickq'); if (q2 && state.pickQ) q2.value = state.pickQ;
 }
 document.addEventListener('click', e => {
   const a = e.target.closest('[data-act]'); if (!a) return;
@@ -2838,7 +2838,7 @@ function capSummary(k, p, st){
   const cut = (s, n) => { s = String(s || ''); return s.length > n ? s.slice(0, n - 1) + '…' : s; };
   switch (k){
     case 'ten': return st.nameTpl ? ['', 'Tên: ' + cut(st.nameTpl, 70)] : ['warn', 'Chưa có mẫu tên phiếu'];
-    case 'truong': { const m = pushMode(st), pt = m === 'khong' ? 'không ghi ngược' : m === 'chon' ? 'ghi ngược ' + (st.pushFields || []).length + ' trường' : 'ghi ngược tất cả';
+    case 'truong': { const m = pushMode(st), pt = m === 'khong' ? 'không ghi ngược' : m === 'db' ? 'ghi ngược trường DB' : m === 'chon' ? 'ghi ngược ' + (st.pushFields || []).length + ' trường' : 'ghi ngược tất cả';
       return st.fields.length ? ['', 'Bảng: ' + st.fields.length + ' trường · Base: ' + pt] : ['warn', 'Chưa chọn trường nào']; }
     case 'file': { const x = [st.src && 'lấy từ ' + fname(st.src), st.drive && 'cất vào ' + st.drive, st.dst && 'gửi vào ' + fname(st.dst), st.src2 && 'lưu thêm ' + st.src2].filter(Boolean); return x.length ? ['', cut(x.join(' · '), 80)] : ['warn', 'Chưa chọn nơi lấy / cất / gửi file']; }
     case 'ai': return !st.ai ? ['warn', 'Chưa chọn mẫu AI'] : (!st.src && !st.aiSrc ? ['warn', 'Mẫu ' + st.ai + ' · chưa có file để đọc'] : ['', 'Mẫu: ' + st.ai + ' · ghi ' + aiMapOf(st).filter(r => r.truong).length + ' trường' + (st.aiMap ? ' (riêng)' : '') + (st.aiSrc && st.aiSrc !== st.src ? ' · đọc riêng ' + st.aiSrc : '')]);
@@ -3030,10 +3030,11 @@ function modeRowHTML(p){
 }
 
 /* -- ghi ngược lên Base: tat_ca (mặc định, như cũ) | chon | khong -- */
-const PUSH_MODES = [['tat_ca', 'Tất cả trường trong bảng'], ['chon', 'Chọn trường'], ['khong', 'Không ghi ngược']];
+const PUSH_MODES = [['tat_ca', 'Tất cả trường trong bảng'], ['db', 'Trường ghi vào DB'], ['chon', 'Chọn trường'], ['khong', 'Không ghi ngược']];
 const pushMode = st => st.pushMode || 'tat_ca';
 function pushParam(st){
   const m = pushMode(st);
+  if (m === 'db') return {chi_truong:st.fields.slice()};
   if (m === 'chon') return {chi_truong:(st.pushFields || []).slice()};
   if (m === 'khong') return {chi_truong:[]};
   return {};
@@ -3046,7 +3047,8 @@ function pushHTML(p, st){
     const pf = st.pushFields || [], cand = Array.from(new Set(st.fields.concat(pf)));
     h += cand.length ? '<div class="lt-days">' + cand.map(c => '<label' + (st.fields.includes(c) ? '' : ' class="stale" title="Trường này chưa ghi vào bảng nên không có giá trị để ghi ngược"') + '><input type="checkbox" data-push value="' + esc(c) + '"' + (pf.includes(c) ? ' checked' : '') + '>' + esc(fname(c)) + '</label>').join('') + '</div>' : '<p class="small muted">Chọn trường ở phần 1 trước — chỉ trường có trong bảng mới ghi ngược được.</p>';
     h += '<p class="small muted">' + pf.length + '/' + st.fields.length + ' trường sẽ ghi ngược.' + (pf.some(c => !st.fields.includes(c)) ? ' <span style="color:var(--warn)">Trường viền đứt chưa có trong bảng.</span>' : '') + '</p>';
-  } else if (m === 'khong') h += '<p class="small muted">Chỉ ghi vào bảng dữ liệu. Tên / nội dung phiếu (nếu bật "Đặt tên và nội dung phiếu") vẫn cập nhật lên Base.</p>';
+  } else if (m === 'db') h += st.fields.length ? '<p class="small muted">Ghi ngược đúng ' + st.fields.length + ' trường ở phần 1: ' + st.fields.map(c => esc(fname(c))).join(', ') + '. Thêm / bớt trường ở phần 1 thì phần này đổi theo. Cột khác trong bảng (do bước khác ghi) không bị đẩy lên.</p>' : '<p class="small" style="color:var(--warn)">Phần 1 chưa có trường nào nên sẽ không ghi ngược trường nào.</p>';
+  else if (m === 'khong') h += '<p class="small muted">Chỉ ghi vào bảng dữ liệu. Tên / nội dung phiếu (nếu bật "Đặt tên và nội dung phiếu") vẫn cập nhật lên Base.</p>';
   else h += '<p class="small muted">Như trước đây: mọi trường service_ có giá trị trong bảng đều ghi ngược lên Base.</p>';
   return h + '</div>';
 }
