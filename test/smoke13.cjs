@@ -28,7 +28,7 @@ setTimeout(() => {
       const cap = q('#cap-truong'); if (!cap) continue;
       if (!cap.checked){ cap.checked = true; cap.dispatchEvent(new w.Event('change', { bubbles: true })); }
       if (q('#capmodal').hidden) click('[data-act="capopen"][data-k="truong"]');
-      if (qa('#fchips .fchip').length >= 2) break;
+      if (qa('#fchips .fchip').length >= 2 && !q('#cap-ai').checked) break;
       click('[data-act="capclose"]');
     }
     click('[data-act="pushmode"][data-v="chon"]');
@@ -54,6 +54,23 @@ setTimeout(() => {
     if (!/Không ghi ngược trường nào/.test(chainText())) throw new Error('chuoi khong ghi ro');
     click('[data-act="pushmode"][data-v="tat_ca"]');
     if (/Chỉ ghi ngược|Không ghi ngược trường nào/.test(chainText())) throw new Error('khong bo loc');
+  });
+  T('trường AI đọc: hiện ở phần 1 (thẻ AI), luôn gửi lên Base kể cả "Không ghi ngược"', () => {
+    click('[data-act="capclose"]');
+    const cap = q('#cap-ai'); cap.checked = true; cap.dispatchEvent(new w.Event('change', { bubbles: true }));
+    if (q('#capmodal').hidden) click('[data-act="capopen"][data-k="ai"]');
+    const s = q('#f-ai'); s.value = 'Kho – đọc phiếu xuất nhập kho'; s.dispatchEvent(new w.Event('change', { bubbles: true }));
+    const af = qa('[data-aimap$=".truong"]').map(x => x.value).filter(Boolean);
+    if (!af.length) throw new Error('mau AI khong co truong');
+    if (!/luôn được ghi vào bảng dữ liệu và gửi lên Base/.test(q('#cm-body').textContent)) throw new Error('popup AI khong ghi chu');
+    click('[data-act="capclose"]'); click('[data-act="capopen"][data-k="truong"]');
+    click('[data-act="pushmode"][data-v="khong"]');
+    const nf = af.filter(c => !qa('#fchips .fchip small').some(x => x.textContent === c)).length;
+    if (nf && qa('.fchip.ai').length !== nf) throw new Error('phan 1 khong hien the AI: ' + qa('.fchip.ai').length + '/' + nf);
+    if (!new RegExp('Chỉ ghi ngược ' + af.length + ' trường').test(chainText())) throw new Error('khong ghi nguoc truong AI: ' + af.length);
+    click('[data-act="pushmode"][data-v="chon"]');
+    if (qa('.lt-days label.ai input:disabled:checked').length !== af.length) throw new Error('truong AI khong khoa trong chon truong');
+    click('[data-act="pushmode"][data-v="tat_ca"]');
   });
   T('văn thư: mẫu chuỗi có sẵn cũng nhận lọc ghi ngược', () => {
     click('[data-act="capclose"]'); click('[data-act="back"]'); click('tr[data-pid="vtd-du"]');
