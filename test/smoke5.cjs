@@ -115,7 +115,7 @@ setTimeout(() => {
     const snap = JSON.parse(w.localStorage.getItem(Object.keys(w.localStorage).find(k => /dk|base|quy/i.test(k)) || Object.keys(w.localStorage)[0])).snap;
     if (!JSON.parse(snap).RULES || !JSON.parse(snap).RULES.vaitro['vti-bhck'].nguoi_ky) throw new Error('khong luu RULES');
     go('quy-trinh'); click('[data-act="back"]');
-    if (!/khối webhook mới chưa cấu hình/.test(q('#view').textContent)) throw new Error('khong co canh bao doi chieu');
+    if (!/TAM_AN_TONG_QUAN = true/.test(html) && !/khối webhook mới chưa cấu hình/.test(q('#view').textContent)) throw new Error('khong co canh bao doi chieu');
   });
   console.log(errs.length ? '\nLOI: ' + errs.join(' | ') : '\nTAT CA OK');
   process.exit(errs.length ? 1 : 0);

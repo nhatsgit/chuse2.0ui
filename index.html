@@ -1217,10 +1217,12 @@ function kpiHTML(){
     o(errN ? 'button' : 'div', errN ? 'loi' : '', 'log', 'Lần chạy lỗi', errN, 'lần', errN ? 'bấm để xem nhật ký lỗi' : 'không có lỗi', 'err') +
   '</div>';
 }
+const TAM_AN_TONG_QUAN = true;
 function viewProcs(){
   let h = '<div class="ck-ph"><div class="ck-ph-ico" aria-hidden="true">' + icon('flow') + '</div><div class="ck-ph-chu"><h1>Quy trình</h1><p>Mỗi quy trình gắn với một dịch vụ trên Base Service. Bấm vào một dòng để chọn việc hệ thống làm ở từng bước.</p></div><div class="ck-ph-nut"><button class="ck-btn chinh" data-act="wizard" type="button">' + icon('link') + 'Thêm quy trình từ Base</button></div></div>';
-  h += kpiHTML();
-  if (state.issues.length){
+  /* tạm ẩn dải số liệu + khung "Cần sửa": đổi TAM_AN_TONG_QUAN = false để hiện lại */
+  if (!TAM_AN_TONG_QUAN) h += kpiHTML();
+  if (!TAM_AN_TONG_QUAN && state.issues.length){
     h += '<section class="card"><div class="card-h"><h2>Cần sửa</h2><span class="small muted">Những chỗ cấu hình sẽ làm phiếu bị dừng</span></div><div class="alerts">';
     state.issues.forEach(it => {
       h += '<div class="alert"><span class="sev ' + it.sev + '"></span><div class="body"><h3>' + esc(it.title) + '</h3><div class="small muted">' + esc(it.where) + '</div></div><div class="acts"><button class="btn sm" data-act="open" data-pid="' + it.pid + '" data-si="' + it.si + '" type="button">' + esc(it.fix) + '</button><button class="btn ghost sm" data-act="dismiss" data-id="' + it.id + '" type="button">Ẩn</button></div></div>';
